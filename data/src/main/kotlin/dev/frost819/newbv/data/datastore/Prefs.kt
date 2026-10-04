@@ -267,7 +267,7 @@ object Prefs {
         restore = { VideoCodec.fromCode(it) },
     )
 
-    /** 启用视频软解。 */
+    /** 强制全程软解。关闭时硬解优先，解码器初始化失败再尝试软解。 */
     var enableSoftwareVideoDecoder by pref(PrefKeys.enableSoftwareVideoDecoder, false)
 
     /** 播放结束动作。 */

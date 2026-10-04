@@ -18,6 +18,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -267,6 +268,12 @@ class AccountRepositoryImplTest {
             assertThat(Prefs.sessData).isEmpty()
             assertThat(authRepository.mid).isNull()
             assertThat(authRepository.sessionData).isNull()
+            verify {
+                BiliHttpApi.sessData = ""
+                BiliHttpApi.biliJct = ""
+                BiliHttpApi.mid = null
+                BiliHttpApi.accessToken = ""
+            }
         }
 
     @Test

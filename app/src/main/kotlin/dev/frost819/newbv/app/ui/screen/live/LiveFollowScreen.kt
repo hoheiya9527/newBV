@@ -23,18 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.frost819.newbv.app.ui.component.ListFooterTip
-import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
-import dev.frost819.newbv.app.ui.component.focusSaverItem
-import dev.frost819.newbv.app.ui.component.livecard.LiveRoomCard
-import dev.frost819.newbv.app.ui.component.livecard.LiveRoomCardData
-import dev.frost819.newbv.app.ui.component.livecard.formatOnlineCount
-import dev.frost819.newbv.app.ui.component.rememberFocusSaver
-import dev.frost819.newbv.app.ui.navigation.LiveFollowRoute
-import dev.frost819.newbv.app.ui.navigation.LivePlayerRoute
-import dev.frost819.newbv.biliapi.http.entity.live.FollowLiveRoom
-import dev.frost819.newbv.biliapi.repositories.LiveRepository
-import dev.frost819.newbv.core.log.Loggers
+import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +32,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import javax.inject.Inject
+
+import dev.frost819.newbv.app.ui.component.ListFooterTip
+import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
+import dev.frost819.newbv.app.ui.component.focusSaverItem
+import dev.frost819.newbv.app.ui.component.livecard.LiveRoomCard
+import dev.frost819.newbv.app.ui.component.livecard.LiveRoomCardData
+import dev.frost819.newbv.app.ui.component.livecard.formatOnlineCount
+import dev.frost819.newbv.app.ui.component.rememberFocusSaver
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
+import dev.frost819.newbv.app.ui.navigation.LiveFollowRoute
+import dev.frost819.newbv.app.ui.navigation.LivePlayerRoute
+import dev.frost819.newbv.biliapi.http.entity.live.FollowLiveRoom
+import dev.frost819.newbv.biliapi.repositories.LiveRepository
+import dev.frost819.newbv.core.log.Loggers
 
 /**
  * 关注直播列表页 ViewModel。
@@ -172,7 +174,7 @@ private fun LiveFollowScreen(
 
         TvLazyVerticalGrid(
             state = gridState,
-            columns = GridCells.Fixed(4),
+            columns = GridCells.Fixed(scaledGridColumns(4)),
             contentPadding = PaddingValues(24.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -180,9 +182,9 @@ private fun LiveFollowScreen(
             itemsIndexed(
                 items = state.items,
                 key = { _, item -> item.roomId },
-            ) { index, item ->
+            ) { _, item ->
                 LiveRoomCard(
-                    modifier = Modifier.focusSaverItem(focusSaver, "live_follow_$index"),
+                    modifier = Modifier.focusSaverItem(focusSaver, "live_follow_${item.roomId}"),
                     data = item,
                     onClick = {
                         navController.navigate(

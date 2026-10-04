@@ -16,11 +16,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Border
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.MaterialTheme
@@ -59,6 +57,15 @@ fun SeasonCard(
         shape = ClickableSurfaceDefaults.shape(shape = MaterialTheme.shapes.large),
         border =
             ClickableSurfaceDefaults.border(
+                border =
+                    Border(
+                        border =
+                            BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f),
+                            ),
+                        shape = MaterialTheme.shapes.large,
+                    ),
                 focusedBorder =
                     Border(
                         border = BorderStroke(width = 3.dp, color = MaterialTheme.colorScheme.border),
@@ -108,9 +115,7 @@ fun SeasonCard(
                                 .fillMaxWidth()
                                 .padding(8.dp, 0.dp),
                         text = data.rating ?: "",
-                        fontStyle = FontStyle.Italic,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
+                        style = MaterialTheme.typography.titleMedium.copy(fontStyle = FontStyle.Italic),
                         textAlign = TextAlign.End,
                     )
                 }
@@ -130,7 +135,7 @@ fun SeasonCard(
                         text = data.subTitle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     )
                 }

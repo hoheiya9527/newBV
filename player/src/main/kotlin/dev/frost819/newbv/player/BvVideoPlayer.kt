@@ -32,6 +32,9 @@ fun BvVideoPlayer(
                     player = videoPlayer.mPlayer
                     resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
                     useController = false
+                    // PlayerView 默认可能走 Activity 主题底色；强制纯黑，避免非 16:9 留白发灰
+                    setBackgroundColor(android.graphics.Color.BLACK)
+                    setShutterBackgroundColor(android.graphics.Color.BLACK)
                 }
             },
             update = { playerView ->

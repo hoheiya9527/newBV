@@ -1,8 +1,8 @@
 package dev.frost819.newbv.biliapi.entity.video
 
-import bilibili.app.archive.v1.author
-import bilibili.app.archive.v1.stat
-import bilibili.app.view.v1.relate
+import bilibili.app.archive.v1.Author as GrpcAuthor
+import bilibili.app.archive.v1.Stat
+import bilibili.app.view.v1.Relate
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
@@ -16,26 +16,32 @@ class RelatedVideoGrpcTest {
     @Test
     fun `fromRelate gRPC maps all fields with author present`() {
         val grpcRelate =
-            relate {
-                aid = 993403941L
-                cid = 1051761130L
-                pic = "http://pic.test"
-                title = "相关视频"
-                duration = 600L
-                goto = "av"
-                uri = "http://uri.test"
-                stat =
-                    stat {
-                        view = 100000
-                        danmaku = 500
-                    }
-                author =
-                    author {
-                        mid = 123L
-                        name = "UP主"
-                        face = "http://face.test"
-                    }
-            }
+            Relate
+                .newBuilder()
+                .apply {
+                    aid = 993403941L
+                    cid = 1051761130L
+                    pic = "http://pic.test"
+                    title = "相关视频"
+                    duration = 600L
+                    goto = "av"
+                    uri = "http://uri.test"
+                    stat =
+                        Stat
+                            .newBuilder()
+                            .apply {
+                                view = 100000
+                                danmaku = 500
+                            }.build()
+                    author =
+                        GrpcAuthor
+                            .newBuilder()
+                            .apply {
+                                mid = 123L
+                                name = "UP主"
+                                face = "http://face.test"
+                            }.build()
+                }.build()
 
         val related = RelatedVideo.fromRelate(grpcRelate)
 
@@ -55,16 +61,18 @@ class RelatedVideoGrpcTest {
     @Test
     fun `fromRelate gRPC falls back to desc when author is null`() {
         val grpcRelate =
-            relate {
-                aid = 100L
-                cid = 200L
-                pic = ""
-                title = "无作者"
-                duration = 0L
-                goto = "av"
-                desc = "fallback author"
-                stat = stat { }
-            }
+            Relate
+                .newBuilder()
+                .apply {
+                    aid = 100L
+                    cid = 200L
+                    pic = ""
+                    title = "无作者"
+                    duration = 0L
+                    goto = "av"
+                    desc = "fallback author"
+                    stat = Stat.getDefaultInstance()
+                }.build()
 
         val related = RelatedVideo.fromRelate(grpcRelate)
 
@@ -77,15 +85,17 @@ class RelatedVideoGrpcTest {
     @Test
     fun `fromRelate gRPC with no author falls back to desc string`() {
         val grpcRelate =
-            relate {
-                aid = 1L
-                cid = 2L
-                pic = ""
-                title = ""
-                duration = 0L
-                goto = "av"
-                stat = stat { }
-            }
+            Relate
+                .newBuilder()
+                .apply {
+                    aid = 1L
+                    cid = 2L
+                    pic = ""
+                    title = ""
+                    duration = 0L
+                    goto = "av"
+                    stat = Stat.getDefaultInstance()
+                }.build()
 
         val related = RelatedVideo.fromRelate(grpcRelate)
 
@@ -98,16 +108,18 @@ class RelatedVideoGrpcTest {
     @Test
     fun `fromRelate gRPC with bangumi_ep goto sets jumpToSeason true and extracts epid`() {
         val grpcRelate =
-            relate {
-                aid = 0L
-                cid = 0L
-                pic = "http://cover.test"
-                title = "番剧"
-                duration = 0L
-                goto = "bangumi_ep"
-                uri = "https://www.bilibili.com/bangumi/play/ep12345?from=xxx"
-                stat = stat { }
-            }
+            Relate
+                .newBuilder()
+                .apply {
+                    aid = 0L
+                    cid = 0L
+                    pic = "http://cover.test"
+                    title = "番剧"
+                    duration = 0L
+                    goto = "bangumi_ep"
+                    uri = "https://www.bilibili.com/bangumi/play/ep12345?from=xxx"
+                    stat = Stat.getDefaultInstance()
+                }.build()
 
         val related = RelatedVideo.fromRelate(grpcRelate)
 
@@ -118,16 +130,18 @@ class RelatedVideoGrpcTest {
     @Test
     fun `fromRelate gRPC with special goto sets jumpToSeason true and extracts epid`() {
         val grpcRelate =
-            relate {
-                aid = 0L
-                cid = 0L
-                pic = ""
-                title = "特别篇"
-                duration = 0L
-                goto = "special"
-                uri = "https://www.bilibili.com/bangumi/play/ep67890"
-                stat = stat { }
-            }
+            Relate
+                .newBuilder()
+                .apply {
+                    aid = 0L
+                    cid = 0L
+                    pic = ""
+                    title = "特别篇"
+                    duration = 0L
+                    goto = "special"
+                    uri = "https://www.bilibili.com/bangumi/play/ep67890"
+                    stat = Stat.getDefaultInstance()
+                }.build()
 
         val related = RelatedVideo.fromRelate(grpcRelate)
 
@@ -138,16 +152,18 @@ class RelatedVideoGrpcTest {
     @Test
     fun `fromRelate gRPC with av goto does not jump to season`() {
         val grpcRelate =
-            relate {
-                aid = 1L
-                cid = 2L
-                pic = ""
-                title = ""
-                duration = 0L
-                goto = "av"
-                uri = "https://www.bilibili.com/video/BV1xx"
-                stat = stat { }
-            }
+            Relate
+                .newBuilder()
+                .apply {
+                    aid = 1L
+                    cid = 2L
+                    pic = ""
+                    title = ""
+                    duration = 0L
+                    goto = "av"
+                    uri = "https://www.bilibili.com/video/BV1xx"
+                    stat = Stat.getDefaultInstance()
+                }.build()
 
         val related = RelatedVideo.fromRelate(grpcRelate)
 
@@ -158,16 +174,18 @@ class RelatedVideoGrpcTest {
     @Test
     fun `fromRelate gRPC with empty goto does not jump to season`() {
         val grpcRelate =
-            relate {
-                aid = 1L
-                cid = 2L
-                pic = ""
-                title = ""
-                duration = 0L
-                goto = ""
-                uri = ""
-                stat = stat { }
-            }
+            Relate
+                .newBuilder()
+                .apply {
+                    aid = 1L
+                    cid = 2L
+                    pic = ""
+                    title = ""
+                    duration = 0L
+                    goto = ""
+                    uri = ""
+                    stat = Stat.getDefaultInstance()
+                }.build()
 
         val related = RelatedVideo.fromRelate(grpcRelate)
 

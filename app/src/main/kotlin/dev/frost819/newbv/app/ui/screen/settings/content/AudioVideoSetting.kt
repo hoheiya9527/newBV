@@ -70,7 +70,7 @@ fun AudioVideoSetting(modifier: Modifier = Modifier) {
     ) {
         Text(
             text = SettingsMenuNavItem.AudioVideo.displayName,
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineSmall,
         )
         Spacer(modifier = Modifier.height(12.dp))
         SettingListItem(
@@ -104,8 +104,8 @@ fun AudioVideoSetting(modifier: Modifier = Modifier) {
             onClick = { showPlayerCustomShortcutsDialog = true },
         )
         SettingSwitchListItem(
-            title = "软解视频",
-            supportText = "使用软件解码器（兼容性更好但性能较低）",
+            title = "强制软解视频",
+            supportText = "关闭：硬解优先，失败再软解。开启：全程软解（兼容差硬解，更吃 CPU）",
             checked = enableSoftwareVideoDecoder,
             onCheckedChange = {
                 enableSoftwareVideoDecoder = it

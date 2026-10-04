@@ -1,6 +1,6 @@
 package dev.frost819.newbv.biliapi.entity.video
 
-import bilibili.community.service.dm.v1.subtitleItem
+import bilibili.community.service.dm.v1.SubtitleItem as GrpcSubtitleItem
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 import bilibili.community.service.dm.v1.SubtitleAiStatus as GrpcSubtitleAiStatus
@@ -108,15 +108,17 @@ class SubtitleEntityTest {
     @Test
     fun `fromSubtitleItem gRPC maps CC type and Normal aiType and None aiStatus`() {
         val grpcItem =
-            subtitleItem {
-                id = 100L
-                lan = "zh-Hans"
-                lanDoc = "中文（简体）"
-                subtitleUrl = "http://subtitle.test/100.json"
-                type = GrpcSubtitleType.CC
-                aiType = GrpcSubtitleAiType.Normal
-                aiStatus = GrpcSubtitleAiStatus.None
-            }
+            GrpcSubtitleItem
+                .newBuilder()
+                .apply {
+                    id = 100L
+                    lan = "zh-Hans"
+                    lanDoc = "中文（简体）"
+                    subtitleUrl = "http://subtitle.test/100.json"
+                    type = GrpcSubtitleType.CC
+                    aiType = GrpcSubtitleAiType.Normal
+                    aiStatus = GrpcSubtitleAiStatus.None
+                }.build()
 
         val subtitle = Subtitle.fromSubtitleItem(grpcItem)
 
@@ -132,15 +134,17 @@ class SubtitleEntityTest {
     @Test
     fun `fromSubtitleItem gRPC maps AI type and Translate aiType and Exposure aiStatus`() {
         val grpcItem =
-            subtitleItem {
-                id = 200L
-                lan = "ai-en"
-                lanDoc = "AI English"
-                subtitleUrl = "http://subtitle.test/200.json"
-                type = GrpcSubtitleType.AI
-                aiType = GrpcSubtitleAiType.Translate
-                aiStatus = GrpcSubtitleAiStatus.Exposure
-            }
+            GrpcSubtitleItem
+                .newBuilder()
+                .apply {
+                    id = 200L
+                    lan = "ai-en"
+                    lanDoc = "AI English"
+                    subtitleUrl = "http://subtitle.test/200.json"
+                    type = GrpcSubtitleType.AI
+                    aiType = GrpcSubtitleAiType.Translate
+                    aiStatus = GrpcSubtitleAiStatus.Exposure
+                }.build()
 
         val subtitle = Subtitle.fromSubtitleItem(grpcItem)
 
@@ -152,13 +156,15 @@ class SubtitleEntityTest {
     @Test
     fun `fromSubtitleItem gRPC maps Assist aiStatus`() {
         val grpcItem =
-            subtitleItem {
-                id = 300L
-                lan = "ai-zh"
-                lanDoc = "AI 中文"
-                subtitleUrl = ""
-                aiStatus = GrpcSubtitleAiStatus.Assist
-            }
+            GrpcSubtitleItem
+                .newBuilder()
+                .apply {
+                    id = 300L
+                    lan = "ai-zh"
+                    lanDoc = "AI 中文"
+                    subtitleUrl = ""
+                    aiStatus = GrpcSubtitleAiStatus.Assist
+                }.build()
 
         val subtitle = Subtitle.fromSubtitleItem(grpcItem)
 
@@ -168,12 +174,14 @@ class SubtitleEntityTest {
     @Test
     fun `fromSubtitleItem gRPC defaults type to CC when not set`() {
         val grpcItem =
-            subtitleItem {
-                id = 400L
-                lan = ""
-                lanDoc = ""
-                subtitleUrl = ""
-            }
+            GrpcSubtitleItem
+                .newBuilder()
+                .apply {
+                    id = 400L
+                    lan = ""
+                    lanDoc = ""
+                    subtitleUrl = ""
+                }.build()
 
         val subtitle = Subtitle.fromSubtitleItem(grpcItem)
 

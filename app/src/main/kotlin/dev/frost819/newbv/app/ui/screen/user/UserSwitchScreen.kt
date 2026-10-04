@@ -84,7 +84,7 @@ fun UserSwitchScreen(
         ) {
             Text(
                 text = stringResource(R.string.user_switch_title),
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.headlineSmall,
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -104,7 +104,7 @@ fun UserSwitchScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = stringResource(R.string.user_switch_no_users),
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(

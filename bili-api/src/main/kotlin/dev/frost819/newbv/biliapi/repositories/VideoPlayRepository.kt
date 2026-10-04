@@ -1,12 +1,12 @@
 package dev.frost819.newbv.biliapi.repositories
 
+import bilibili.app.playerunite.v1.PlayViewUniteReq
 import bilibili.app.playerunite.v1.PlayerGrpcKt
-import bilibili.app.playerunite.v1.playViewUniteReq
 import bilibili.community.service.dm.v1.DMGrpcKt
-import bilibili.community.service.dm.v1.dmSegMobileReq
-import bilibili.community.service.dm.v1.dmViewReq
-import bilibili.pgc.gateway.player.v2.playViewReq
-import bilibili.playershared.videoVod
+import bilibili.community.service.dm.v1.DmSegMobileReq
+import bilibili.community.service.dm.v1.DmViewReq
+import bilibili.pgc.gateway.player.v2.PlayViewReq
+import bilibili.playershared.VideoVod
 import dev.frost819.newbv.biliapi.entity.ApiType
 import dev.frost819.newbv.biliapi.entity.CodeType
 import dev.frost819.newbv.biliapi.entity.PlayData
@@ -81,19 +81,23 @@ class VideoPlayRepository(
                                     val playUniteReply =
                                         runCatching {
                                             playerStub?.playViewUnite(
-                                                playViewUniteReq {
-                                                    vod =
-                                                        videoVod {
-                                                            this.aid = aid
-                                                            this.cid = cid
-                                                            fnval = 4048
-                                                            qn = 127
-                                                            fnver = 0
-                                                            fourk = true
-                                                            forceHost = 2
-                                                            preferCodecType = codecType.toPlayerSharedCodeType()
-                                                        }
-                                                },
+                                                PlayViewUniteReq
+                                                    .newBuilder()
+                                                    .apply {
+                                                        vod =
+                                                            VideoVod
+                                                                .newBuilder()
+                                                                .apply {
+                                                                    this.aid = aid
+                                                                    this.cid = cid
+                                                                    fnval = 4048
+                                                                    qn = 127
+                                                                    fnver = 0
+                                                                    fourk = true
+                                                                    forceHost = 2
+                                                                    preferCodecType = codecType.toPlayerSharedCodeType()
+                                                                }.build()
+                                                    }.build(),
                                             ) ?: throw IllegalStateException("Player stub is not initialized")
                                         }.onFailure {
                                             // dont throw
@@ -161,17 +165,19 @@ class VideoPlayRepository(
                         codecTypes
                             .map { codecType ->
                                 val req =
-                                    playViewReq {
-                                        this.epid = epid.toLong()
-                                        cid?.let { this.cid = it }
-                                        qn = 127
-                                        fnver = 0
-                                        fnval = 4048
-                                        fourk = true
-                                        forceHost = 0
-                                        download = 0
-                                        preferCodecType = codecType.toPgcPlayUrlCodeType()
-                                    }
+                                    PlayViewReq
+                                        .newBuilder()
+                                        .apply {
+                                            this.epid = epid.toLong()
+                                            cid?.let { this.cid = it }
+                                            qn = 127
+                                            fnver = 0
+                                            fnval = 4048
+                                            fourk = true
+                                            forceHost = 0
+                                            download = 0
+                                            preferCodecType = codecType.toPgcPlayUrlCodeType()
+                                        }.build()
                                 async {
                                     val playReply =
                                         runCatching {
@@ -227,11 +233,13 @@ class VideoPlayRepository(
                 val dmViewReply =
                     runCatching {
                         danmakuStub?.dmView(
-                            dmViewReq {
-                                pid = aid
-                                oid = cid
-                                type = 1
-                            },
+                            DmViewReq
+                                .newBuilder()
+                                .apply {
+                                    pid = aid
+                                    oid = cid
+                                    type = 1
+                                }.build(),
                         )
                     }.onFailure { handleGrpcException(it) }.getOrThrow()
                 dmViewReply
@@ -326,12 +334,14 @@ class VideoPlayRepository(
                     val reply =
                         runCatching {
                             danmakuStub?.dmSegMobile(
-                                dmSegMobileReq {
-                                    pid = aid
-                                    oid = cid
-                                    type = 1
-                                    this.segmentIndex = segmentIndex.toLong()
-                                },
+                                DmSegMobileReq
+                                    .newBuilder()
+                                    .apply {
+                                        pid = aid
+                                        oid = cid
+                                        type = 1
+                                        this.segmentIndex = segmentIndex.toLong()
+                                    }.build(),
                             ) ?: throw IllegalStateException("Danmaku stub is not initialized")
                         }.onFailure { handleGrpcException(it) }.getOrThrow()
                     reply.elemsList.map { DanmakuData.fromDanmakuElem(it) }
@@ -359,11 +369,13 @@ class VideoPlayRepository(
                     val dmViewReply =
                         runCatching {
                             danmakuStub?.dmView(
-                                dmViewReq {
-                                    pid = aid
-                                    oid = cid
-                                    type = 1
-                                },
+                                DmViewReq
+                                    .newBuilder()
+                                    .apply {
+                                        pid = aid
+                                        oid = cid
+                                        type = 1
+                                    }.build(),
                             )
                         }.onFailure { handleGrpcException(it) }.getOrThrow()
                     dmViewReply?.mask?.maskUrl

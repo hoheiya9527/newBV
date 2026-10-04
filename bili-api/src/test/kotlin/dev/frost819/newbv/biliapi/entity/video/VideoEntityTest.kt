@@ -1,11 +1,11 @@
 package dev.frost819.newbv.biliapi.entity.video
 
-import bilibili.app.archive.v1.author
-import bilibili.app.archive.v1.dimension
-import bilibili.app.archive.v1.page
-import bilibili.app.archive.v1.stat
-import bilibili.app.view.v1.tag
-import bilibili.app.view.v1.viewPage
+import bilibili.app.archive.v1.Author as GrpcAuthor
+import bilibili.app.archive.v1.Dimension as GrpcDimension
+import bilibili.app.archive.v1.Page
+import bilibili.app.archive.v1.Stat
+import bilibili.app.view.v1.Tag as GrpcTag
+import bilibili.app.view.v1.ViewPage
 import com.google.common.truth.Truth.assertThat
 import dev.frost819.newbv.biliapi.entity.user.Author
 import dev.frost819.newbv.biliapi.http.entity.video.RelatedVideoInfo
@@ -181,10 +181,12 @@ class VideoEntityTest {
     @Test
     fun `Dimension fromDimension gRPC maps width and height`() {
         val grpcDim =
-            dimension {
-                width = 1920L
-                height = 1080L
-            }
+            GrpcDimension
+                .newBuilder()
+                .apply {
+                    width = 1920L
+                    height = 1080L
+                }.build()
 
         val dim = Dimension.fromDimension(grpcDim)
 
@@ -196,10 +198,12 @@ class VideoEntityTest {
     @Test
     fun `Dimension fromDimension gRPC with portrait infers isVertical true`() {
         val grpcDim =
-            dimension {
-                width = 720L
-                height = 1280L
-            }
+            GrpcDimension
+                .newBuilder()
+                .apply {
+                    width = 720L
+                    height = 1280L
+                }.build()
 
         val dim = Dimension.fromDimension(grpcDim)
 
@@ -209,10 +213,12 @@ class VideoEntityTest {
     @Test
     fun `Dimension fromDimension gRPC with zero dimensions`() {
         val grpcDim =
-            dimension {
-                width = 0L
-                height = 0L
-            }
+            GrpcDimension
+                .newBuilder()
+                .apply {
+                    width = 0L
+                    height = 0L
+                }.build()
 
         val dim = Dimension.fromDimension(grpcDim)
 
@@ -228,10 +234,12 @@ class VideoEntityTest {
     @Test
     fun `Tag fromTag gRPC maps id and name`() {
         val grpcTag =
-            tag {
-                id = 42L
-                name = "测试标签"
-            }
+            GrpcTag
+                .newBuilder()
+                .apply {
+                    id = 42L
+                    name = "测试标签"
+                }.build()
 
         val tag = Tag.fromTag(grpcTag)
 
@@ -242,10 +250,12 @@ class VideoEntityTest {
     @Test
     fun `Tag fromTag gRPC with zero id`() {
         val grpcTag =
-            tag {
-                id = 0L
-                name = ""
-            }
+            GrpcTag
+                .newBuilder()
+                .apply {
+                    id = 0L
+                    name = ""
+                }.build()
 
         val tag = Tag.fromTag(grpcTag)
 
@@ -260,20 +270,26 @@ class VideoEntityTest {
     @Test
     fun `VideoPage fromViewPage gRPC maps all fields`() {
         val grpcPage =
-            viewPage {
-                page =
-                    bilibili.app.archive.v1.page {
-                        cid = 456L
-                        page = 2
-                        part = "第二P"
-                        duration = 300L
-                        dimension =
-                            dimension {
-                                width = 1920L
-                                height = 1080L
-                            }
-                    }
-            }
+            ViewPage
+                .newBuilder()
+                .apply {
+                    page =
+                        Page
+                            .newBuilder()
+                            .apply {
+                                cid = 456L
+                                page = 2
+                                part = "第二P"
+                                duration = 300L
+                                dimension =
+                                    GrpcDimension
+                                        .newBuilder()
+                                        .apply {
+                                            width = 1920L
+                                            height = 1080L
+                                        }.build()
+                            }.build()
+                }.build()
 
         val page = VideoPage.fromViewPage(grpcPage)
 
@@ -288,20 +304,26 @@ class VideoEntityTest {
     @Test
     fun `VideoPage fromViewPage gRPC with portrait dimension`() {
         val grpcPage =
-            viewPage {
-                page =
-                    bilibili.app.archive.v1.page {
-                        cid = 789L
-                        page = 1
-                        part = "竖屏P"
-                        duration = 60L
-                        dimension =
-                            dimension {
-                                width = 720L
-                                height = 1280L
-                            }
-                    }
-            }
+            ViewPage
+                .newBuilder()
+                .apply {
+                    page =
+                        Page
+                            .newBuilder()
+                            .apply {
+                                cid = 789L
+                                page = 1
+                                part = "竖屏P"
+                                duration = 60L
+                                dimension =
+                                    GrpcDimension
+                                        .newBuilder()
+                                        .apply {
+                                            width = 720L
+                                            height = 1280L
+                                        }.build()
+                            }.build()
+                }.build()
 
         val page = VideoPage.fromViewPage(grpcPage)
 
@@ -315,16 +337,18 @@ class VideoEntityTest {
     @Test
     fun `Stat fromStat gRPC maps all stat fields`() {
         val grpcStat =
-            stat {
-                view = 10000
-                danmaku = 500
-                reply = 200
-                fav = 100
-                coin = 50
-                share = 10
-                hisRank = 5
-                like = 1000
-            }
+            Stat
+                .newBuilder()
+                .apply {
+                    view = 10000
+                    danmaku = 500
+                    reply = 200
+                    fav = 100
+                    coin = 50
+                    share = 10
+                    hisRank = 5
+                    like = 1000
+                }.build()
 
         val stat = VideoDetail.Stat.fromStat(grpcStat)
 
@@ -340,7 +364,7 @@ class VideoEntityTest {
 
     @Test
     fun `Stat fromStat gRPC with zero values`() {
-        val grpcStat = stat { }
+        val grpcStat = Stat.getDefaultInstance()
 
         val stat = VideoDetail.Stat.fromStat(grpcStat)
 
@@ -361,11 +385,13 @@ class VideoEntityTest {
     @Test
     fun `Author fromAuthor gRPC maps mid name face`() {
         val grpcAuthor =
-            author {
-                mid = 123L
-                name = "UP主"
-                face = "http://face.test"
-            }
+            GrpcAuthor
+                .newBuilder()
+                .apply {
+                    mid = 123L
+                    name = "UP主"
+                    face = "http://face.test"
+                }.build()
 
         val author = Author.fromAuthor(grpcAuthor)
 
@@ -377,11 +403,13 @@ class VideoEntityTest {
     @Test
     fun `Author fromAuthor gRPC with empty strings`() {
         val grpcAuthor =
-            author {
-                mid = 0L
-                name = ""
-                face = ""
-            }
+            GrpcAuthor
+                .newBuilder()
+                .apply {
+                    mid = 0L
+                    name = ""
+                    face = ""
+                }.build()
 
         val author = Author.fromAuthor(grpcAuthor)
 

@@ -59,7 +59,7 @@ fun OtherSetting(
     ) {
         Text(
             text = SettingsMenuNavItem.Other.displayName,
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineSmall,
         )
         Spacer(modifier = Modifier.height(12.dp))
 

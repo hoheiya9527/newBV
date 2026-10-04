@@ -201,7 +201,7 @@ private fun MainStage(
                         item {
                             Text(
                                 text = "暂无自定义快捷键，点击下方按钮添加",
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                             )
                         }
                     } else {

@@ -71,7 +71,9 @@ import androidx.tv.material3.SuggestionChipDefaults
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+
 import dev.frost819.newbv.app.ui.component.FocusSaver
+import dev.frost819.newbv.app.ui.component.atDesignDensity
 import dev.frost819.newbv.app.ui.component.LoadingTip
 import dev.frost819.newbv.app.ui.component.comment.CommentDialogMode
 import dev.frost819.newbv.app.ui.component.comment.CommentsDialog
@@ -295,7 +297,10 @@ private fun VideoDetailContent(
                 navController.navigate(SearchResultRoute(keyword = tag.name))
             },
             onPlayVideo = {
-                val playCid = lastPlayedCid.takeIf { it != 0L } ?: detail.cid
+                val playCid =
+                    lastPlayedCid.takeIf { cid ->
+                        cid != 0L && detail.pages.any { it.cid == cid }
+                    } ?: detail.cid
                 viewModel.updateVideoList(detail.aid, playCid, detail.title)
                 navController.navigate(
                     VideoPlayerRoute(
@@ -495,7 +500,7 @@ private fun FavoriteFolderDialog(
             Column {
                 Text(
                     text = "选择收藏夹",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(bottom = 16.dp),
                 )
@@ -961,7 +966,7 @@ private fun VideoPartRow(
         ) {
             Text(
                 text = "分P",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             if (pages.size > PART_LIST_DIALOG_THRESHOLD) {
@@ -1021,10 +1026,7 @@ private fun VideoPartRow(
         }
         val focusRequester = focusSaver.focusRequesterFor("parts")
         LazyRow(
-            modifier =
-                Modifier
-                    .onFocusChanged { if (it.hasFocus) focusSaver.saveFocusedKey("parts") }
-                    .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding =
                 androidx.compose.foundation.layout
@@ -1088,7 +1090,7 @@ private fun VideoUgcSeasonRow(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             if (episodes.size > PART_LIST_DIALOG_THRESHOLD) {
@@ -1148,10 +1150,7 @@ private fun VideoUgcSeasonRow(
         }
         val focusRequester = focusSaver.focusRequesterFor("seasons")
         LazyRow(
-            modifier =
-                Modifier
-                    .onFocusChanged { if (it.hasFocus) focusSaver.saveFocusedKey("seasons") }
-                    .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding =
                 androidx.compose.foundation.layout
@@ -1192,16 +1191,13 @@ private fun RelatedVideoRow(
     ) {
         Text(
             text = "相关视频",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 50.dp),
         )
         val focusRequester = focusSaver.focusRequesterFor("related")
         LazyRow(
-            modifier =
-                Modifier
-                    .onFocusChanged { if (it.hasFocus) focusSaver.saveFocusedKey("related") }
-                    .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding =
                 androidx.compose.foundation.layout
@@ -1213,17 +1209,17 @@ private fun RelatedVideoRow(
                     modifier =
                         if (video == videos.first()) {
                             Modifier
-                                .width(200.dp)
+                                .width(200.dp.atDesignDensity())
                                 .focusRequester(focusRequester)
                                 .focusSaverItem(focusSaver, "related_${video.aid}")
                         } else {
                             Modifier
-                                .width(200.dp)
+                                .width(200.dp.atDesignDensity())
                                 .focusSaverItem(focusSaver, "related_${video.aid}")
                         },
                     data = cardData,
                     onClick = { onClick(cardData) },
-                    onGoToDetailPage = { onClick(cardData) },
+                    onGoToDetailPage = { navController.navigateFromVideoCard(cardData, forceDetail = true) },
                     onGoToUpPage =
                         video.author?.mid?.let { mid ->
                             {

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,10 +42,12 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import coil3.compose.AsyncImage
+
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.focusSaverItem
 import dev.frost819.newbv.core.focus.isDpadRight
 import dev.frost819.newbv.core.focus.isKeyDown
+import dev.frost819.newbv.core.theme.BVColors
 import dev.frost819.newbv.data.datastore.LeftNaviItem
 
 /**
@@ -97,6 +100,9 @@ fun LeftNaviContent(
                 },
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
+        // 深色主题 surface / secondaryContainer 都是纯黑，Material3 默认焦点指示条
+        // 会和导航栏底融在一起。遥控器焦点必须用独立的品牌色底。
+        val itemColors = leftNaviItemColors()
         var userIsFocused by remember { mutableStateOf(false) }
         NavigationRailItem(
             modifier =
@@ -112,6 +118,7 @@ fun LeftNaviContent(
                     onLogin()
                 }
             },
+            colors = itemColors,
             selected = userIsFocused,
             icon = {
                 if (isLogin) {
@@ -165,6 +172,7 @@ fun LeftNaviContent(
                             .onFocusChanged { isFocused = it.hasFocus }
                             .selectionIndicator(indicatorColor),
                     onClick = { onLeftNaviItemChanged(item) },
+                    colors = itemColors,
                     selected = isFocused,
                     icon = {
                         Icon(
@@ -185,6 +193,7 @@ fun LeftNaviContent(
                         settingsIsFocused = it.hasFocus
                     },
             onClick = onOpenSettings,
+            colors = itemColors,
             selected = settingsIsFocused,
             icon = {
                 Icon(
@@ -219,6 +228,22 @@ val LeftNaviItem.displayName: String
             LeftNaviItem.PGC -> "影视"
             LeftNaviItem.Live -> "直播"
         }
+
+/**
+ * 左侧导航项配色。
+ *
+ * 焦点（[androidx.compose.material3.NavigationRailItem] 的 selected）用品牌浅紫底 + 白图标。
+ * 当前页另有左侧色条，两者分开：色条表示所在页，底色表示遥控器焦点。
+ */
+@Composable
+private fun leftNaviItemColors() =
+    NavigationRailItemDefaults.colors(
+        selectedIconColor = Color.White,
+        selectedTextColor = Color.White,
+        indicatorColor = BVColors.PrimaryLight,
+        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 
 /** 绘制左侧选中指示条。 */
 private fun Modifier.selectionIndicator(color: Color): Modifier =

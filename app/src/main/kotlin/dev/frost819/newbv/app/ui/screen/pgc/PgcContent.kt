@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.Scaffold as Material3Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,21 +33,23 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.PgcCarousel
 import dev.frost819.newbv.app.ui.component.TopNav
 import dev.frost819.newbv.app.ui.component.TopNavItem
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
+import dev.frost819.newbv.app.ui.component.atDesignDensity
 import dev.frost819.newbv.app.ui.component.focusSaverItem
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.component.videocard.SeasonCard
 import dev.frost819.newbv.app.ui.component.videocard.SeasonCardData
 import dev.frost819.newbv.app.ui.navigation.PgcFeatureRoute
 import dev.frost819.newbv.app.viewmodel.pgc.PgcViewModel
 import dev.frost819.newbv.biliapi.entity.pgc.PgcType
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import androidx.compose.material3.Scaffold as Material3Scaffold
 
 /**
  * PGC 影视顶部导航项。
@@ -163,7 +166,7 @@ private fun PgcGrid(
 
     TvLazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(scaledGridColumns(4)),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -191,15 +194,15 @@ private fun PgcGrid(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .height(240.dp),
+                            .height(240.dp.atDesignDensity()),
                 )
             }
         }
 
         itemsIndexed(
             items = state.items,
-            key = { index, _ -> index },
-        ) { index, item ->
+            key = { _, item -> item.seasonId },
+        ) { _, item ->
             val cardData =
                 remember(item) {
                     SeasonCardData(
@@ -218,7 +221,7 @@ private fun PgcGrid(
                 onGoToDetailPage = {
                     navController.navigate(PgcFeatureRoute(seasonId = item.seasonId.toLong()))
                 },
-                modifier = Modifier.focusSaverItem(focusSaver, "pgc_item_$index"),
+                modifier = Modifier.focusSaverItem(focusSaver, "pgc_item_${item.seasonId}"),
             )
         }
 

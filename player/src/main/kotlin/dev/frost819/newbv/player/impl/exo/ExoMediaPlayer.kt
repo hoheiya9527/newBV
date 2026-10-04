@@ -9,6 +9,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.Renderer
@@ -19,7 +20,6 @@ import androidx.media3.exoplayer.hls.playlist.HlsMultivariantPlaylist
 import androidx.media3.exoplayer.hls.playlist.HlsPlaylist
 import androidx.media3.exoplayer.hls.playlist.HlsPlaylistParserFactory
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
-import androidx.media3.exoplayer.mediacodec.MediaCodecUtil
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -54,6 +54,12 @@ class ExoMediaPlayer(
         private const val BEHIND_LIVE_WINDOW_RECOVER_WINDOW_MS = 15_000L
         private const val BEHIND_LIVE_WINDOW_RECOVER_MIN_INTERVAL_MS = 1_200L
         private const val BEHIND_LIVE_WINDOW_MAX_RECOVERS = 2
+        // TV 盒子内存紧：限制缓冲时长与字节上限，避免 4K 占满 RAM 拖垮解码
+        private const val MIN_BUFFER_MS = 15_000
+        private const val MAX_BUFFER_MS = 30_000
+        private const val BUFFER_FOR_PLAYBACK_MS = 1_500
+        private const val BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 2_500
+        private const val TARGET_BUFFER_BYTES = 48 * 1024 * 1024
     }
 
     /** ExoPlayer 实例，在 [initPlayer] 中创建 */
@@ -94,30 +100,29 @@ class ExoMediaPlayer(
                         false -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF
                     },
                 )
+                setEnableDecoderFallback(true)
                 if (options.enableSoftwareVideoDecoder) {
-                    // 强制软件解码：只选择 OMX.google.* / c2.android.* 开头的解码器
-                    setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
-                        val allDecoders =
-                            MediaCodecUtil.getDecoderInfos(
-                                mimeType,
-                                requiresSecureDecoder,
-                                requiresTunnelingDecoder,
-                            )
-                        val softwareDecoders =
-                            allDecoders.filter {
-                                it.name.startsWith("OMX.google.") || it.name.startsWith("c2.android.")
-                            }
-                        // 兜底回退到硬解
-                        softwareDecoders.ifEmpty { allDecoders }
-                    }
+                    setMediaCodecSelector(softwareVideoCodecSelector)
                 } else {
                     setMediaCodecSelector(MediaCodecSelector.DEFAULT)
                 }
             }
+        val loadControl =
+            DefaultLoadControl
+                .Builder()
+                .setBufferDurationsMs(
+                    MIN_BUFFER_MS,
+                    MAX_BUFFER_MS,
+                    BUFFER_FOR_PLAYBACK_MS,
+                    BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
+                ).setTargetBufferBytes(TARGET_BUFFER_BYTES)
+                .setPrioritizeTimeOverSizeThresholds(false)
+                .build()
         mPlayer =
             ExoPlayer
                 .Builder(context)
                 .setRenderersFactory(renderersFactory)
+                .setLoadControl(loadControl)
                 .setSeekForwardIncrementMs(1000 * 10)
                 .setSeekBackIncrementMs(1000 * 5)
                 .build()
@@ -261,7 +266,8 @@ class ExoMediaPlayer(
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (isPlaying) {
             mPlayerEventListener?.onPlay()
-        } else {
+        } else if (mPlayer?.playbackState != Player.STATE_BUFFERING) {
+            // 缓冲时 isPlaying=false，不能当成用户暂停
             mPlayerEventListener?.onPause()
         }
     }
@@ -283,20 +289,24 @@ class ExoMediaPlayer(
                 buffered: $bufferedPercentage%
                 resolution: ${mPlayer?.videoSize?.width} x ${mPlayer?.videoSize?.height}
                 audio: ${mPlayer?.audioFormat?.bitrate ?: 0} kbps
-                video codec: ${mPlayer?.videoFormat?.sampleMimeType ?: "null"}
+                video codec: ${mPlayer?.videoFormat?.sampleMimeType ?: "null"} ($videoRendererName)
                 audio codec: ${mPlayer?.audioFormat?.sampleMimeType ?: "null"} ($audioRendererName)
                 """.trimIndent()
         }
 
     /** 当前活跃的音频渲染器名称（如 "OMX.google.aac.decoder"）。 */
     val audioRendererName: String
-        get() = findAudioRendererName()
+        get() = findRendererName(C.TRACK_TYPE_AUDIO)
 
-    private fun findAudioRendererName(): String {
+    /** 当前活跃的视频渲染器名称（用于确认硬解/软解）。 */
+    val videoRendererName: String
+        get() = findRendererName(C.TRACK_TYPE_VIDEO)
+
+    private fun findRendererName(trackType: Int): String {
         val rendererCount = mPlayer?.rendererCount ?: return "UnknownRenderer"
         for (i in 0 until rendererCount) {
             val renderer = mPlayer!!.getRenderer(i)
-            if (renderer.trackType == C.TRACK_TYPE_AUDIO && renderer.state == Renderer.STATE_STARTED) {
+            if (renderer.trackType == trackType && renderer.state == Renderer.STATE_STARTED) {
                 return renderer.name
             }
         }

@@ -37,7 +37,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Icon
 import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
@@ -85,7 +84,10 @@ fun MediaCodecScreen(
             Box(
                 modifier = Modifier.padding(start = 48.dp, top = 24.dp, bottom = 8.dp, end = 48.dp),
             ) {
-                Text(text = "编解码信息", fontSize = 24.sp)
+                Text(
+                    text = "编解码信息",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
             }
         },
     ) { innerPadding ->

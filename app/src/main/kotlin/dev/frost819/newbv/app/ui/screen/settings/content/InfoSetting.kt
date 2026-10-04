@@ -97,7 +97,7 @@ fun InfoSetting(
     ) {
         Text(
             text = SettingsMenuNavItem.Info.displayName,
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineSmall,
         )
         Spacer(modifier = Modifier.height(12.dp))
         Column(

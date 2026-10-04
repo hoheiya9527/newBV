@@ -21,6 +21,7 @@ import dev.frost819.newbv.app.util.PlaybackCandidate
 import dev.frost819.newbv.app.util.PlayerConstants
 import dev.frost819.newbv.app.util.VideoCapabilityProvider
 import dev.frost819.newbv.app.util.VideoDecodeProfile
+import dev.frost819.newbv.app.util.codecFallbackOrder
 import dev.frost819.newbv.app.util.collectCodecs
 import dev.frost819.newbv.app.util.findTrack
 import dev.frost819.newbv.app.util.orderQualities
@@ -70,6 +71,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.util.Calendar
 import javax.inject.Inject
+
 import dev.frost819.newbv.data.datastore.ApiType as DataApiType
 
 private const val PLAYER_ACTION_TIMEOUT_MS = 10_000L
@@ -672,6 +674,7 @@ class PlayerViewModel
          * 切换播放视频。
          *
          * 同步旧视频进度，更新 UI 状态，重新加载资源。
+         * `cid<=0` 时先拉详情补齐再 playurl。
          * 通过 [videoSwitchEvent] 通知 UI 层协调弹幕/字幕重载。
          */
         fun playNewVideo(newVideo: VideoListItem) {
@@ -721,24 +724,40 @@ class PlayerViewModel
             }
             resetDecodeFallbackState()
 
-            // 通知 UI 层重载弹幕/字幕（非阻塞，避免卡住 playNewVideo）
-            viewModelScope.launch { _videoSwitchEvent.emit(VideoSwitchEvent(newVideo.aid, newVideo.cid)) }
-
-            // 异步加载详情 + 历史进度（不阻塞 playVideoWithResources）
-            if (shouldUpdateDetail) {
-                viewModelScope.launch(Dispatchers.IO) {
-                    videoInfoRepository.loadVideoDetail(newVideo.aid, getApiType())
-                    // 仅当历史 cid 与当前播放 cid 一致时才应用断点续播
-                    val sharedState = videoInfoRepository.videoSharedState.value
-                    val historyCid = sharedState?.lastPlayedCid ?: 0L
-                    val historyTime = sharedState?.lastPlayedTime ?: 0
-                    if (historyCid == newVideo.cid && historyTime > 0) {
-                        _uiState.update { it.copy(lastPlayed = historyTime) }
-                    }
-                }
-            }
             if (shouldUpdateList) {
                 videoInfoRepository.updateVideoList(listOf(newVideo))
+            }
+
+            val needsCidFromDetail = newVideo.cid <= 0L && (newVideo.epid ?: 0) <= 0
+            if (needsCidFromDetail) {
+                // 相关视频等入口常无 cid，必须先拿详情再 playurl / 重载弹幕
+                viewModelScope.launch {
+                    videoInfoRepository.loadVideoDetail(newVideo.aid, getApiType())
+                    val resolvedCid = videoInfoRepository.videoDetail.value?.cid ?: 0L
+                    if (resolvedCid <= 0L) {
+                        _uiState.update {
+                            it.copy(
+                                playerState = PlayerState.Error("无法获取视频分P"),
+                                isBuffering = false,
+                            )
+                        }
+                        return@launch
+                    }
+                    _uiState.update { it.copy(cid = resolvedCid) }
+                    applyResumeIfHistoryMatches(resolvedCid)
+                    _videoSwitchEvent.emit(VideoSwitchEvent(newVideo.aid, resolvedCid))
+                    loadVideoWithResources()
+                }
+                return
+            }
+
+            viewModelScope.launch { _videoSwitchEvent.emit(VideoSwitchEvent(newVideo.aid, newVideo.cid)) }
+
+            if (shouldUpdateDetail) {
+                viewModelScope.launch {
+                    videoInfoRepository.loadVideoDetail(newVideo.aid, getApiType())
+                    applyResumeIfHistoryMatches(_uiState.value.cid)
+                }
             }
 
             loadVideoWithResources()
@@ -759,6 +778,16 @@ class PlayerViewModel
             val aid = state.aid
             val cid = state.cid
             val epid = state.epid
+
+            if (cid <= 0L && (epid ?: 0) <= 0) {
+                _uiState.update {
+                    it.copy(
+                        playerState = PlayerState.Error("无法获取视频分P"),
+                        isBuffering = false,
+                    )
+                }
+                return
+            }
 
             loadVideoJob?.cancel()
             loadVideoJob =
@@ -913,14 +942,7 @@ class PlayerViewModel
         private fun nextDecodeCandidate(current: MediaProfileState): PlaybackCandidate? {
             val data = playData ?: return null
             val qualities = orderQualities(data.dashVideos.map { it.quality }, Prefs.defaultQuality.code)
-            val codecOrder =
-                listOf(
-                    Prefs.defaultVideoCodec,
-                    VideoCodec.HEVC,
-                    VideoCodec.AV1,
-                    VideoCodec.AVC,
-                    VideoCodec.DVH1,
-                ).distinct()
+            val codecOrder = codecFallbackOrder(Prefs.defaultVideoCodec)
 
             // 按画质序 × 编码序生成候选，排除当前项与已尝试项；
             // requireDecodable=true 时再排除本机判定不可解码的项
@@ -1270,6 +1292,24 @@ class PlayerViewModel
                 throw e
             } catch (e: Exception) {
                 logger.warn { "Send heartbeat failed: $e" }
+            }
+        }
+
+        /**
+         * 历史 cid 与当前分 P 一致时写入续播进度；若已经在播则立即 seek。
+         *
+         * [onPlay] 里的一次性 seek 可能早于异步详情返回，这里补上迟到的历史。
+         */
+        private fun applyResumeIfHistoryMatches(cid: Long) {
+            if (cid <= 0L) return
+            val sharedState = videoInfoRepository.videoSharedState.value
+            val historyCid = sharedState?.lastPlayedCid ?: 0L
+            val historyTime = sharedState?.lastPlayedTime ?: 0
+            if (historyCid != cid || historyTime <= 0) return
+            _uiState.update { it.copy(lastPlayed = historyTime) }
+            if (_uiState.value.playerState == PlayerState.Playing) {
+                seekToLastPlayed()
+                _uiState.update { it.copy(lastPlayed = 0) }
             }
         }
 

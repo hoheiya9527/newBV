@@ -35,7 +35,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.ListItem
@@ -104,7 +103,7 @@ fun LogViewerScreen(
             ) {
                 Text(
                     text = "日志管理",
-                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineSmall,
                 )
             }
         },
@@ -177,7 +176,11 @@ fun LogViewerScreen(
                                         .height(200.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Text(text = "无日志")
+                                Text(
+                                    text = "无日志",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                     }
@@ -198,7 +201,7 @@ fun LogViewerScreen(
                     Text(
                         modifier = Modifier.padding(16.dp),
                         text = "浏览器打开 ${uiState.serverAddress}\n或扫码进入日志管理",
-                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                     )
                     Box(

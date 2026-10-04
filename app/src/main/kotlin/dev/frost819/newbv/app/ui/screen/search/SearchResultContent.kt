@@ -39,12 +39,15 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.tv.material3.Icon
 import androidx.tv.material3.IconButton
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.TopNav
 import dev.frost819.newbv.app.ui.component.TopNavItem
@@ -52,6 +55,7 @@ import dev.frost819.newbv.app.ui.component.focusSaverItem
 import dev.frost819.newbv.app.ui.component.livecard.LiveRoomCard
 import dev.frost819.newbv.app.ui.component.livecard.LiveRoomCardData
 import dev.frost819.newbv.app.ui.component.rememberFocusSaver
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.component.search.SearchResultFilter
 import dev.frost819.newbv.app.ui.component.search.UpCard
 import dev.frost819.newbv.app.ui.component.videocard.SeasonCard
@@ -72,8 +76,6 @@ import dev.frost819.newbv.app.viewmodel.common.WatchLaterViewModel
 import dev.frost819.newbv.app.viewmodel.search.SearchResultViewModel
 import dev.frost819.newbv.biliapi.repositories.SearchType
 import dev.frost819.newbv.core.focus.touchClickable
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 
 private val searchTypeLabels =
     mapOf(
@@ -119,7 +121,7 @@ fun SearchResultContent(
     focusSaver.RestoreFocus()
 
     val activeResult = uiState.results[uiState.activeType] ?: TypedSearchResult(uiState.activeType)
-    val columnCount = searchTypeColumns[uiState.activeType] ?: 4
+    val columnCount = scaledGridColumns(searchTypeColumns[uiState.activeType] ?: 4)
 
     val isVideoSearchViaWebApi =
         remember {
@@ -186,7 +188,7 @@ fun SearchResultContent(
             ) {
                 Text(
                     text = keyword,
-                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),

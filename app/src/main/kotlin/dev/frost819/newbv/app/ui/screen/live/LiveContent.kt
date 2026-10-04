@@ -49,18 +49,20 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.flow.distinctUntilChanged
+
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
 import dev.frost819.newbv.app.ui.component.focusSaverItem
 import dev.frost819.newbv.app.ui.component.livecard.LiveRoomCard
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.navigation.LiveAreaRoute
 import dev.frost819.newbv.app.ui.navigation.LiveFollowRoute
 import dev.frost819.newbv.app.ui.navigation.LivePlayerRoute
 import dev.frost819.newbv.app.viewmodel.live.LiveHomeViewModel
 import dev.frost819.newbv.biliapi.http.entity.live.LiveAreaParent
 import dev.frost819.newbv.core.focus.touchClickable
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
  * 直播浏览页（上→下：我的关注 → 推荐分区 → 推荐信息流）。
@@ -113,7 +115,7 @@ fun LiveContent(
                     false
                 },
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(scaledGridColumns(4)),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -132,7 +134,7 @@ fun LiveContent(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Text(
                     text = "加载中…",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -140,7 +142,7 @@ fun LiveContent(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Text(
                     text = "加载失败",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.error,
                 )
             }
@@ -148,7 +150,7 @@ fun LiveContent(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Text(
                     text = "暂无关注的直播",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

@@ -1,9 +1,10 @@
 package dev.frost819.newbv.biliapi.repositories
 
+import bilibili.main.community.reply.v1.CursorReq
+import bilibili.main.community.reply.v1.DetailListReq
+import bilibili.main.community.reply.v1.MainListReq
+import bilibili.main.community.reply.v1.Mode
 import bilibili.main.community.reply.v1.ReplyGrpcKt
-import bilibili.main.community.reply.v1.cursorReq
-import bilibili.main.community.reply.v1.detailListReq
-import bilibili.main.community.reply.v1.mainListReq
 import dev.frost819.newbv.biliapi.entity.ApiType
 import dev.frost819.newbv.biliapi.entity.comment.Comment
 import dev.frost819.newbv.biliapi.entity.comment.CommentPage
@@ -55,21 +56,25 @@ class CommentRepository(
             ApiType.App -> {
                 val reply =
                     replyStub?.mainList(
-                        mainListReq {
-                            oid = aid
-                            type = 1
-                            cursor =
-                                cursorReq {
-                                    // gRPC 使用服务端返回的 next cursor 翻页，不能用本地页码代替
-                                    next = nextCursor ?: 0L
-                                    mode =
-                                        if (sort == 0) {
-                                            bilibili.main.community.reply.v1.Mode.MAIN_LIST_TIME
-                                        } else {
-                                            bilibili.main.community.reply.v1.Mode.MAIN_LIST_HOT
-                                        }
-                                }
-                        },
+                        MainListReq
+                            .newBuilder()
+                            .apply {
+                                oid = aid
+                                type = 1
+                                cursor =
+                                    CursorReq
+                                        .newBuilder()
+                                        .apply {
+                                            // gRPC 使用服务端返回的 next cursor 翻页，不能用本地页码代替
+                                            next = nextCursor ?: 0L
+                                            mode =
+                                                if (sort == 0) {
+                                                    Mode.MAIN_LIST_TIME
+                                                } else {
+                                                    Mode.MAIN_LIST_HOT
+                                                }
+                                        }.build()
+                            }.build(),
                     ) ?: throw IllegalStateException("App gRPC reply stub is not initialized")
                 CommentPage(
                     comments =
@@ -117,14 +122,16 @@ class CommentRepository(
             ApiType.App -> {
                 val reply =
                     replyStub?.detailList(
-                        detailListReq {
-                            oid = aid
-                            type = 1
-                            root = rootRpid
-                            rpid = rootRpid
-                            // gRPC 使用服务端返回的 next cursor 翻页，不能用本地页码代替
-                            cursor = cursorReq { next = nextCursor ?: 0L }
-                        },
+                        DetailListReq
+                            .newBuilder()
+                            .apply {
+                                oid = aid
+                                type = 1
+                                root = rootRpid
+                                rpid = rootRpid
+                                // gRPC 使用服务端返回的 next cursor 翻页，不能用本地页码代替
+                                cursor = CursorReq.newBuilder().setNext(nextCursor ?: 0L).build()
+                            }.build(),
                     ) ?: throw IllegalStateException("App gRPC reply stub is not initialized")
                 val root = reply.root
                 CommentPage(

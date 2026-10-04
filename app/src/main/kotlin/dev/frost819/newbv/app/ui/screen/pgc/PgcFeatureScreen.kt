@@ -62,7 +62,9 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+
 import dev.frost819.newbv.app.ui.component.FocusSaver
+import dev.frost819.newbv.app.ui.component.atDesignDensity
 import dev.frost819.newbv.app.ui.component.LoadingTip
 import dev.frost819.newbv.app.ui.component.dialog.EpisodeGridButton
 import dev.frost819.newbv.app.ui.component.dialog.EpisodeListDialog
@@ -292,7 +294,7 @@ private fun SeasonInfoHeader(
                 Modifier
                     .focusRequester(coverFocusRequester)
                     .onFocusChanged { if (it.hasFocus) focusSaver.saveFocusedKey("cover") }
-                    .width(240.dp)
+                    .width(180.dp.atDesignDensity())
                     .fillMaxHeight()
                     .aspectRatio(0.7f)
                     .touchClickable(onClick = onPlay),
@@ -557,7 +559,7 @@ private fun EpisodeCard(
     Column(
         modifier =
             modifier
-                .width(200.dp)
+                .width(200.dp.atDesignDensity())
                 .focusRequester(focusSaver.focusRequesterFor(epKey))
                 .onFocusChanged { if (it.hasFocus) focusSaver.saveFocusedKey(epKey) },
     ) {

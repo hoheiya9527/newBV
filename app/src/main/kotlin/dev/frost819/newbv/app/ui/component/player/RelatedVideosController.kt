@@ -26,6 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+
+import dev.frost819.newbv.app.ui.component.atDesignDensity
 import dev.frost819.newbv.app.ui.component.videocard.SmallVideoCard
 import dev.frost819.newbv.app.ui.component.videocard.VideoCardData
 import dev.frost819.newbv.core.theme.BVTheme
@@ -102,7 +104,7 @@ fun RelatedVideosController(
                         key = { it.avid },
                     ) { video ->
                         SmallVideoCard(
-                            modifier = Modifier.width(240.dp),
+                            modifier = Modifier.width(240.dp.atDesignDensity()),
                             data = video,
                             onClick = { onVideoClicked(video) },
                         )

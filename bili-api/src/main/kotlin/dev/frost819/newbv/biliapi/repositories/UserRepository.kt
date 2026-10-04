@@ -2,7 +2,7 @@ package dev.frost819.newbv.biliapi.repositories
 
 import bilibili.app.dynamic.v2.DynamicGrpcKt
 import bilibili.app.dynamic.v2.Refresh
-import bilibili.app.dynamic.v2.dynVideoReq
+import bilibili.app.dynamic.v2.DynVideoReq
 import dev.frost819.newbv.biliapi.entity.ApiType
 import dev.frost819.newbv.biliapi.entity.user.DynamicVideoData
 import dev.frost819.newbv.biliapi.entity.user.FollowedUser
@@ -214,14 +214,16 @@ class UserRepository(
                 val stub = dynamicStub ?: throw IllegalStateException("App gRPC channel is not initialized")
                 runCatching {
                     stub.dynVideo(
-                        dynVideoReq {
-                            this.page = page
-                            this.offset = offset
-                            this.updateBaseline = updateBaseline
-                            localTime = 8
-                            refreshType =
-                                if (offset == "") Refresh.refresh_new else Refresh.refresh_history
-                        },
+                        DynVideoReq
+                            .newBuilder()
+                            .apply {
+                                this.page = page
+                                this.offset = offset
+                                this.updateBaseline = updateBaseline
+                                localTime = 8
+                                refreshType =
+                                    if (offset == "") Refresh.refresh_new else Refresh.refresh_history
+                            }.build(),
                     )
                 }.getOrElse { handleGrpcException(it) }
                     .let { DynamicVideoData.fromDynamicData(it) }

@@ -97,7 +97,7 @@ fun StorageSetting(modifier: Modifier = Modifier) {
         ) {
             Text(
                 text = SettingsMenuNavItem.Storage.displayName,
-                style = MaterialTheme.typography.displaySmall,
+                style = MaterialTheme.typography.headlineSmall,
             )
             Spacer(modifier = Modifier.height(12.dp))
             LazyColumn(

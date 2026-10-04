@@ -131,8 +131,8 @@ class VideoDetailViewModel
                                 isLiked = matched?.liked ?: it.isLiked,
                                 isCoined = matched?.coined ?: it.isCoined,
                                 isFavorite = matched?.favorited ?: it.isFavorite,
-                                historyLastPlayedCid = state?.lastPlayedCid ?: it.historyLastPlayedCid,
-                                historyLastPlayedTime = state?.lastPlayedTime ?: it.historyLastPlayedTime,
+                                historyLastPlayedCid = matched?.lastPlayedCid ?: it.historyLastPlayedCid,
+                                historyLastPlayedTime = matched?.lastPlayedTime ?: it.historyLastPlayedTime,
                             )
                         }
                     }

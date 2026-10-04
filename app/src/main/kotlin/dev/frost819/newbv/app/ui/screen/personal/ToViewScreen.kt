@@ -1,9 +1,7 @@
 package dev.frost819.newbv.app.ui.screen.personal
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -14,17 +12,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+
+import dev.frost819.newbv.app.ui.component.EmptyStateTip
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
 import dev.frost819.newbv.app.ui.component.focusSaverItem
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.component.videocard.SmallVideoCard
 import dev.frost819.newbv.app.ui.component.videocard.VideoCardData
+import dev.frost819.newbv.app.ui.component.videocard.videoGridSkeleton
 import dev.frost819.newbv.app.ui.navigation.UserSpaceRoute
 import dev.frost819.newbv.app.ui.navigation.navigateFromVideoCard
 import dev.frost819.newbv.app.util.ToastUtils
@@ -69,31 +70,27 @@ fun ToViewScreen(
     }
 
     if (viewModel.toViewItems.isEmpty() && !state.toViewLoading && !state.toViewError) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            androidx.tv.material3.Text(
-                text = "没有稍后再看的视频",
-                color = androidx.tv.material3.MaterialTheme.colorScheme.onSurface,
-            )
-        }
+        EmptyStateTip(text = "没有稍后再看的视频", modifier = modifier)
         return
     }
 
     TvLazyVerticalGrid(
         modifier = modifier,
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(scaledGridColumns(4)),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        videoGridSkeleton(
+            visible = viewModel.toViewItems.isEmpty() && state.toViewLoading,
+            keyPrefix = "toview",
+        )
         if (unwatched.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }, key = "unwatched_header") {
                 SectionHeader(title = "未看完 (${unwatched.size})")
             }
-            itemsIndexed(items = unwatched) { index, item ->
+            itemsIndexed(items = unwatched, key = { _, item -> item.oid }) { _, item ->
                 val cardData =
                     remember(item) {
                         val durationMs = item.duration * 1000L
@@ -125,7 +122,7 @@ fun ToViewScreen(
                         )
                     }
                 SmallVideoCard(
-                    modifier = Modifier.focusSaverItem(focusSaver, "toview_unwatched_$index"),
+                    modifier = Modifier.focusSaverItem(focusSaver, "toview_unwatched_${item.oid}"),
                     data = cardData,
                     onClick = {
                         navController.navigateFromVideoCard(cardData)
@@ -148,7 +145,7 @@ fun ToViewScreen(
             item(span = { GridItemSpan(maxLineSpan) }, key = "watched_header") {
                 SectionHeader(title = "已看完 (${watched.size})")
             }
-            itemsIndexed(items = watched) { index, item ->
+            itemsIndexed(items = watched, key = { _, item -> item.oid }) { _, item ->
                 val cardData =
                     remember(item) {
                         val durationMs = item.duration * 1000L
@@ -168,7 +165,7 @@ fun ToViewScreen(
                         )
                     }
                 SmallVideoCard(
-                    modifier = Modifier.focusSaverItem(focusSaver, "toview_watched_$index"),
+                    modifier = Modifier.focusSaverItem(focusSaver, "toview_watched_${item.oid}"),
                     data = cardData,
                     onClick = {
                         navController.navigateFromVideoCard(cardData)
@@ -189,7 +186,7 @@ fun ToViewScreen(
 
         item(span = { GridItemSpan(maxLineSpan) }) {
             ListFooterTip(
-                isLoading = state.toViewLoading,
+                isLoading = state.toViewLoading && viewModel.toViewItems.isNotEmpty(),
                 isError = state.toViewError,
                 hasMore = false,
                 itemsIsEmpty = viewModel.toViewItems.isEmpty(),
@@ -205,7 +202,7 @@ fun ToViewScreen(
 private fun SectionHeader(title: String) {
     androidx.tv.material3.Text(
         text = title,
-        style = androidx.tv.material3.MaterialTheme.typography.titleMedium,
+        style = androidx.tv.material3.MaterialTheme.typography.titleLarge,
         color = androidx.tv.material3.MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.fillMaxWidth(),
     )

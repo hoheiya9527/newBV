@@ -1,10 +1,10 @@
 package dev.frost819.newbv.biliapi.grpc.utils
 
-import bilibili.metadata.device.device
-import bilibili.metadata.locale.locale
-import bilibili.metadata.metadata
+import bilibili.metadata.Metadata
+import bilibili.metadata.device.Device
+import bilibili.metadata.locale.Locale
+import bilibili.metadata.network.Network
 import bilibili.metadata.network.NetworkType
-import bilibili.metadata.network.network
 import dev.frost819.newbv.biliapi.http.util.BiliAppConf
 import io.grpc.CallOptions
 import io.grpc.Channel
@@ -92,15 +92,18 @@ fun GrpcMetadata.putMetadataBin(
 ) {
     put(
         GrpcMetadata.Key.of("x-bili-metadata-bin", GrpcMetadata.BINARY_BYTE_MARSHALLER),
-        metadata {
-            this.accessKey = accessKey
-            mobiApp = BiliAppConf.MOBI_APP
-            device = BiliAppConf.DEVICE
-            build = BiliAppConf.APP_BUILD_CODE
-            channel = BiliAppConf.CHANNEL
-            this.buvid = buvid
-            platform = BiliAppConf.PLATFORM
-        }.toByteArray(),
+        Metadata
+            .newBuilder()
+            .apply {
+                this.accessKey = accessKey
+                mobiApp = BiliAppConf.MOBI_APP
+                device = BiliAppConf.DEVICE
+                build = BiliAppConf.APP_BUILD_CODE
+                channel = BiliAppConf.CHANNEL
+                this.buvid = buvid
+                platform = BiliAppConf.PLATFORM
+            }.build()
+            .toByteArray(),
     )
 }
 
@@ -108,15 +111,18 @@ fun GrpcMetadata.putDeviceBin(buvid: String) {
     put(
         io.grpc.Metadata.Key
             .of("x-bili-device-bin", GrpcMetadata.BINARY_BYTE_MARSHALLER),
-        device {
-            appId = BiliAppConf.APP_ID
-            mobiApp = BiliAppConf.MOBI_APP
-            device = BiliAppConf.DEVICE
-            build = BiliAppConf.APP_BUILD_CODE
-            channel = BiliAppConf.CHANNEL
-            this.buvid = buvid
-            platform = BiliAppConf.PLATFORM
-        }.toByteArray(),
+        Device
+            .newBuilder()
+            .apply {
+                appId = BiliAppConf.APP_ID
+                mobiApp = BiliAppConf.MOBI_APP
+                device = BiliAppConf.DEVICE
+                build = BiliAppConf.APP_BUILD_CODE
+                channel = BiliAppConf.CHANNEL
+                this.buvid = buvid
+                platform = BiliAppConf.PLATFORM
+            }.build()
+            .toByteArray(),
     )
 }
 
@@ -124,9 +130,11 @@ fun GrpcMetadata.putLocalBin() {
     put(
         io.grpc.Metadata.Key
             .of("x-bili-local-bin", GrpcMetadata.BINARY_BYTE_MARSHALLER),
-        locale {
-            timezone = BiliAppConf.TIMEZONE
-        }.toByteArray(),
+        Locale
+            .newBuilder()
+            .apply { timezone = BiliAppConf.TIMEZONE }
+            .build()
+            .toByteArray(),
     )
 }
 
@@ -134,8 +142,10 @@ fun GrpcMetadata.putNetworkBin() {
     put(
         io.grpc.Metadata.Key
             .of("x-bili-network-bin", GrpcMetadata.BINARY_BYTE_MARSHALLER),
-        network {
-            type = NetworkType.WIFI
-        }.toByteArray(),
+        Network
+            .newBuilder()
+            .apply { type = NetworkType.WIFI }
+            .build()
+            .toByteArray(),
     )
 }

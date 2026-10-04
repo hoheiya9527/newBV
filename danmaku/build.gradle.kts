@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "${AppConfiguration.appId}.danmaku"
-    compileSdk = AppConfiguration.compileSdk
+    namespace = "${libs.versions.appNamespace.get()}.danmaku"
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = AppConfiguration.minSdk
+        minSdk = libs.versions.minSdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")

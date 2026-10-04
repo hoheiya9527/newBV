@@ -2,12 +2,14 @@ package dev.frost819.newbv.core.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
@@ -52,6 +54,8 @@ fun BVTheme(
     val fontScale = LocalDensity.current.fontScale
     val systemIsDark = isSystemInDarkTheme()
     val isDark = themeMode.isDark(systemIsDark)
+    // 播放器嵌套主题会传入纯黑 canvas，只覆盖 background，保留 surface 给菜单等控件分层
+    val canvasBackground = surfaceColor ?: if (isDark) BVColors.DarkBackground else BVColors.LightBackground
 
     val tvColorScheme =
         if (isDark) {
@@ -64,7 +68,7 @@ fun BVTheme(
                 onSecondary = BVColors.DarkOnBackground,
                 secondaryContainer = BVColors.DarkSurfaceVariant,
                 onSecondaryContainer = BVColors.DarkOnSurface,
-                background = BVColors.DarkBackground,
+                background = canvasBackground,
                 onBackground = BVColors.DarkOnBackground,
                 surface = BVColors.DarkSurface,
                 onSurface = BVColors.DarkOnSurface,
@@ -84,7 +88,7 @@ fun BVTheme(
                 onSecondary = Color.White,
                 secondaryContainer = BVColors.LightSurfaceVariant,
                 onSecondaryContainer = BVColors.LightOnBackground,
-                background = BVColors.LightBackground,
+                background = canvasBackground,
                 onBackground = BVColors.LightOnBackground,
                 surface = BVColors.LightSurface,
                 onSurface = BVColors.LightOnSurface,
@@ -105,7 +109,7 @@ fun BVTheme(
                 onSecondary = BVColors.DarkOnBackground,
                 secondaryContainer = BVColors.DarkSurfaceVariant,
                 onSecondaryContainer = BVColors.DarkOnSurface,
-                background = BVColors.DarkBackground,
+                background = canvasBackground,
                 onBackground = BVColors.DarkOnBackground,
                 surface = BVColors.DarkSurface,
                 onSurface = BVColors.DarkOnSurface,
@@ -122,7 +126,7 @@ fun BVTheme(
                 onSecondary = Color.White,
                 secondaryContainer = BVColors.LightSurfaceVariant,
                 onSecondaryContainer = BVColors.LightOnBackground,
-                background = BVColors.LightBackground,
+                background = canvasBackground,
                 onBackground = BVColors.LightOnBackground,
                 surface = BVColors.LightSurface,
                 onSurface = BVColors.LightOnSurface,
@@ -145,6 +149,8 @@ fun BVTheme(
             ) {
                 CommonSurface(color = Color.Transparent) {
                     TvSurface(
+                        // 播放器传入 surfaceColor 时必须铺满，避免非 16:9 留白露出外层主题底
+                        modifier = if (surfaceColor != null) Modifier.fillMaxSize() else Modifier,
                         shape = RoundedCornerShape(0.dp),
                         // 显式给 contentColor：SurfaceDefaults.colors 默认按
                         // contentColorFor(containerColor) 自动配对，但 Black 不在配色方案中，

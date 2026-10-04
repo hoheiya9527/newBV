@@ -1,6 +1,7 @@
 package dev.frost819.newbv.app.ui.screen.player
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -329,7 +331,10 @@ fun VideoPlayerScreen(
         onShowShortcutTip = { text -> playerViewModel.showShortcutTip(text) },
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
             contentAlignment = Alignment.Center,
         ) {
             // 视频画面
@@ -377,7 +382,6 @@ fun VideoPlayerScreen(
                 showInteractionDialog = false
                 if (resumeAfterInteraction) {
                     playerViewModel.resumePlayback()
-                    danmakuViewModel.play()
                 }
                 resumeAfterInteraction = false
             },
@@ -393,7 +397,6 @@ fun VideoPlayerScreen(
                 showCommentsDialog = false
                 if (resumeAfterComments) {
                     playerViewModel.resumePlayback()
-                    danmakuViewModel.play()
                 }
                 resumeAfterComments = false
             },

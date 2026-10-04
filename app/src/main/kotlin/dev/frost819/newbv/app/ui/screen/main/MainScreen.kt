@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import androidx.tv.material3.DrawerValue
 import androidx.tv.material3.NavigationDrawer
 import androidx.tv.material3.rememberDrawerState
+import dev.frost819.newbv.app.ui.component.EmptyStateTip
 import dev.frost819.newbv.app.ui.component.rememberDoublePressExit
 import dev.frost819.newbv.app.ui.component.rememberFocusSaver
 import dev.frost819.newbv.app.ui.component.user.UserPanel
@@ -248,15 +249,7 @@ fun MainScreen(
  */
 @Composable
 private fun PlaceholderContent(title: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        androidx.tv.material3.Text(
-            text = "$title (待实现)",
-            style = androidx.tv.material3.MaterialTheme.typography.displaySmall,
-        )
-    }
+    EmptyStateTip(text = "$title (待实现)")
 }
 
 @Preview(showBackground = true)

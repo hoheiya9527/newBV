@@ -229,9 +229,9 @@ private fun SearchHotwordsColumn(
             LazyColumn(
                 contentPadding = PaddingValues(vertical = 4.dp),
             ) {
-                itemsIndexed(hotwords) { index, hotword ->
+                itemsIndexed(hotwords, key = { _, hotword -> hotword.showName }) { _, hotword ->
                     SearchKeyword(
-                        modifier = Modifier.focusSaverItem(focusSaver, "search_hotword_$index"),
+                        modifier = Modifier.focusSaverItem(focusSaver, "search_hotword_${hotword.showName}"),
                         keyword = hotword.showName,
                         onClick = { onSearch(hotword.showName) },
                     )
@@ -262,9 +262,9 @@ private fun SearchSuggestsColumn(
         LazyColumn(
             contentPadding = PaddingValues(vertical = 4.dp),
         ) {
-            itemsIndexed(suggests) { index, suggest ->
+            itemsIndexed(suggests, key = { _, suggest -> suggest }) { _, suggest ->
                 SearchKeyword(
-                    modifier = Modifier.focusSaverItem(focusSaver, "search_suggest_$index"),
+                    modifier = Modifier.focusSaverItem(focusSaver, "search_suggest_$suggest"),
                     keyword = suggest,
                     onClick = { onSearch(suggest) },
                 )
@@ -334,9 +334,9 @@ private fun SearchHistoryColumn(
         LazyColumn(
             contentPadding = PaddingValues(vertical = 4.dp),
         ) {
-            itemsIndexed(histories) { index, history ->
+            itemsIndexed(histories, key = { _, history -> history.keyword }) { _, history ->
                 SearchKeyword(
-                    modifier = Modifier.focusSaverItem(focusSaver, "search_history_$index"),
+                    modifier = Modifier.focusSaverItem(focusSaver, "search_history_${history.keyword}"),
                     keyword = history.keyword,
                     onClick = {
                         if (deleteMode) {

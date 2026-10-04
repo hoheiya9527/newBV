@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.Scaffold as Material3Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,22 +30,24 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.TopNav
 import dev.frost819.newbv.app.ui.component.TopNavItem
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
 import dev.frost819.newbv.app.ui.component.focusSaverItem
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.component.videocard.SmallVideoCard
 import dev.frost819.newbv.app.ui.component.videocard.VideoCardData
+import dev.frost819.newbv.app.ui.component.videocard.videoGridSkeleton
 import dev.frost819.newbv.app.ui.navigation.navigateFromVideoCard
 import dev.frost819.newbv.app.util.formatHourMinSec
 import dev.frost819.newbv.app.util.toWanString
 import dev.frost819.newbv.app.viewmodel.ugc.UgcViewModel
 import dev.frost819.newbv.biliapi.entity.ugc.UgcTypeV2
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import androidx.compose.material3.Scaffold as Material3Scaffold
 
 /**
  * UGC 分区顶部导航项。
@@ -169,15 +172,19 @@ private fun UgcGrid(
 
     TvLazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(scaledGridColumns(4)),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        videoGridSkeleton(
+            visible = state.items.isEmpty() && state.loading,
+            keyPrefix = "ugc",
+        )
         itemsIndexed(
             items = state.items,
-            key = { index, _ -> index },
-        ) { index, item ->
+            key = { _, item -> item.aid },
+        ) { _, item ->
             val cardData =
                 remember(item) {
                     VideoCardData(
@@ -193,7 +200,7 @@ private fun UgcGrid(
                     )
                 }
             SmallVideoCard(
-                modifier = Modifier.focusSaverItem(focusSaver, "ugc_$index"),
+                modifier = Modifier.focusSaverItem(focusSaver, "ugc_${item.aid}"),
                 data = cardData,
                 onClick = {
                     navController.navigateFromVideoCard(cardData)
@@ -206,7 +213,7 @@ private fun UgcGrid(
 
         item(span = { GridItemSpan(maxLineSpan) }) {
             ListFooterTip(
-                isLoading = state.loading,
+                isLoading = state.loading && state.items.isNotEmpty(),
                 isError = state.error,
                 hasMore = state.hasMore,
                 itemsIsEmpty = state.items.isEmpty(),

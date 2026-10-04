@@ -182,7 +182,7 @@ private fun UnlockUserContent(
                             UnlockState.ChooseUser -> stringResource(R.string.lock_choose_user)
                             UnlockState.InputPassword -> stringResource(R.string.lock_input_password)
                         },
-                    style = MaterialTheme.typography.displaySmall,
+                    style = MaterialTheme.typography.headlineSmall,
                 )
             }
 

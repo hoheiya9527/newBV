@@ -37,10 +37,15 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+
+import dev.frost819.newbv.app.ui.component.EmptyStateTip
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
 import dev.frost819.newbv.app.ui.component.focusSaverItem
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.component.videocard.SeasonCard
 import dev.frost819.newbv.app.ui.component.videocard.SeasonCardData
 import dev.frost819.newbv.app.ui.navigation.PgcFeatureRoute
@@ -49,8 +54,6 @@ import dev.frost819.newbv.biliapi.entity.season.FollowingSeasonStatus
 import dev.frost819.newbv.biliapi.entity.season.FollowingSeasonType
 import dev.frost819.newbv.core.focus.focusInvertedColors
 import dev.frost819.newbv.core.focus.touchClickable
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 
 /**
  * 追番页面。
@@ -73,15 +76,7 @@ fun FollowingSeasonScreen(
     var showFilter by remember { mutableStateOf(false) }
 
     if (state.followingSeasons.isEmpty() && !state.followingLoading && !state.followingError) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            androidx.tv.material3.Text(
-                text = "没有追番",
-                color = androidx.tv.material3.MaterialTheme.colorScheme.onSurface,
-            )
-        }
+        EmptyStateTip(text = "没有追番", modifier = modifier)
         return
     }
 
@@ -112,7 +107,7 @@ fun FollowingSeasonScreen(
     ) {
         TvLazyVerticalGrid(
             state = gridState,
-            columns = GridCells.Fixed(5),
+            columns = GridCells.Fixed(scaledGridColumns(5)),
             contentPadding = PaddingValues(24.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -125,7 +120,7 @@ fun FollowingSeasonScreen(
                 ) {
                     Text(
                         text = "追番",
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.headlineSmall,
                     )
                     IconButton(
                         onClick = { showFilter = true },
@@ -142,7 +137,7 @@ fun FollowingSeasonScreen(
             itemsIndexed(
                 items = state.followingSeasons,
                 key = { _, item -> item.seasonId },
-            ) { index, item ->
+            ) { _, item ->
                 val cardData =
                     remember(item) {
                         SeasonCardData(
@@ -156,7 +151,7 @@ fun FollowingSeasonScreen(
                     onClick = {
                         navController.navigate(PgcFeatureRoute(seasonId = item.seasonId.toLong()))
                     },
-                    modifier = Modifier.focusSaverItem(focusSaver, "season_$index"),
+                    modifier = Modifier.focusSaverItem(focusSaver, "season_${item.seasonId}"),
                 )
             }
 
@@ -227,7 +222,7 @@ private fun FollowingSeasonFilterDialog(
                 ) {
                     androidx.tv.material3.Text(
                         text = "筛选",
-                        style = androidx.tv.material3.MaterialTheme.typography.titleLarge,
+                        style = androidx.tv.material3.MaterialTheme.typography.headlineSmall,
                     )
 
                     androidx.tv.material3.Text(

@@ -150,9 +150,8 @@ class LivePlayerViewModel
                     }
 
                     override fun onReady() {
-                        _uiState.update {
-                            it.copy(playerState = LivePlayerState.Playing, isBuffering = false)
-                        }
+                        // STATE_READY 在暂停后也会回调，不能把状态写成 Playing
+                        _uiState.update { it.copy(isBuffering = false) }
                     }
 
                     override fun onPlay() {
@@ -168,7 +167,9 @@ class LivePlayerViewModel
                     }
 
                     override fun onEnd() {
-                        _uiState.update { it.copy(playerState = LivePlayerState.Ended) }
+                        _uiState.update {
+                            it.copy(playerState = LivePlayerState.Ended, isBuffering = false)
+                        }
                     }
 
                     override fun onSeekBack(seekBackIncrementMs: Long) {}
@@ -235,6 +236,7 @@ class LivePlayerViewModel
                         _uiState.update {
                             it.copy(
                                 playerState = LivePlayerState.Error,
+                                isBuffering = false,
                                 errorMessage = "获取直播流地址失败",
                             )
                         }
@@ -263,6 +265,7 @@ class LivePlayerViewModel
                     _uiState.update {
                         it.copy(
                             playerState = LivePlayerState.Error,
+                            isBuffering = false,
                             errorMessage = error.message,
                         )
                     }
@@ -326,7 +329,8 @@ class LivePlayerViewModel
                                 appendLine("roomId: ${state.realRoomId}")
                                 appendLine("resolution: ${player.videoWidth} x ${player.videoHeight}")
                                 appendLine("buffered: ${player.bufferedPercentage}%")
-                                appendLine("video: ${player.mPlayer?.videoFormat?.sampleMimeType ?: "null"}")
+                                val videoCodec = player.mPlayer?.videoFormat?.sampleMimeType ?: "null"
+                                appendLine("video: $videoCodec (${player.videoRendererName})")
                                 val audioCodec = player.mPlayer?.audioFormat?.sampleMimeType ?: "null"
                                 appendLine("audio: $audioCodec (${player.audioRendererName})")
                             }.trimEnd()

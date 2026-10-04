@@ -1,6 +1,6 @@
 package dev.frost819.newbv.biliapi.entity.user
 
-import bilibili.app.archive.v1.author
+import bilibili.app.archive.v1.Author as GrpcAuthor
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
@@ -106,11 +106,13 @@ class UserEntityTest {
     @Test
     fun `Author fromAuthor gRPC maps mid name face`() {
         val grpcAuthor =
-            author {
-                mid = 456L
-                name = "gRPC UP主"
-                face = "http://grpc-face.test"
-            }
+            GrpcAuthor
+                .newBuilder()
+                .apply {
+                    mid = 456L
+                    name = "gRPC UP主"
+                    face = "http://grpc-face.test"
+                }.build()
 
         val author = Author.fromAuthor(grpcAuthor)
 
@@ -121,7 +123,7 @@ class UserEntityTest {
 
     @Test
     fun `Author fromAuthor gRPC with default values`() {
-        val grpcAuthor = author { }
+        val grpcAuthor = GrpcAuthor.getDefaultInstance()
 
         val author = Author.fromAuthor(grpcAuthor)
 

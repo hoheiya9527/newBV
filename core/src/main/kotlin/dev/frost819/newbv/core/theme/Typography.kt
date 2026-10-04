@@ -8,11 +8,12 @@ import androidx.tv.material3.Typography as TvTypography
 /**
  * 字体排版定义。
  *
- * 提供 TV Material3 与普通 Material3 两套 Typography。
- * TV 版本针对 10 英尺观看距离增大字号。
+ * 提供 TV Material3 与普通 Material3 两套 Typography，字号与 Material3 默认一致。
+ * 界面按语义选用，不要手写 sp：页标题用 headlineSmall，区块标题用 titleLarge，
+ * 卡片标题用 titleMedium，空态 / 失败提示用 bodyLarge。
  */
 object BVTypography {
-    /** TV Material3 Typography（使用 Material3 默认字号，与原版 BV 一致）。 */
+    /** TV Material3 Typography。 */
     val tv: TvTypography =
         TvTypography(
             displaySmall = TextStyle(fontSize = 36.sp),

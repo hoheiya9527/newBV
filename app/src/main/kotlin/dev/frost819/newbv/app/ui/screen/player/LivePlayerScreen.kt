@@ -2,6 +2,7 @@ package dev.frost819.newbv.app.ui.screen.player
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -99,27 +100,35 @@ fun LivePlayerScreen(
         onDanmakuSettingChange = { danmakuViewModel.updateDanmakuState(it) },
         debugInfo = debugInfo,
     ) {
-        if (videoPlayer != null) {
-            val aspectRatio =
-                if (videoPlayer.videoWidth > 0 && videoPlayer.videoHeight > 0) {
-                    videoPlayer.videoWidth.toFloat() / videoPlayer.videoHeight.toFloat()
-                } else {
-                    16f / 9f
-                }
-            BvVideoPlayer(
-                modifier = Modifier.align(Alignment.Center).fillMaxHeight().aspectRatio(aspectRatio),
-                videoPlayer = videoPlayer,
-            )
-        }
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (videoPlayer != null) {
+                val aspectRatio =
+                    if (videoPlayer.videoWidth > 0 && videoPlayer.videoHeight > 0) {
+                        videoPlayer.videoWidth.toFloat() / videoPlayer.videoHeight.toFloat()
+                    } else {
+                        16f / 9f
+                    }
+                BvVideoPlayer(
+                    modifier = Modifier.fillMaxHeight().aspectRatio(aspectRatio),
+                    videoPlayer = videoPlayer,
+                )
+            }
 
-        if (danmakuPlayer != null && danmakuEnabled) {
-            DanmakuPlayerCompose(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .alpha(danmakuState.alpha),
-                danmakuPlayer = danmakuPlayer,
-            )
+            if (danmakuPlayer != null && danmakuEnabled) {
+                DanmakuPlayerCompose(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .alpha(danmakuState.alpha),
+                    danmakuPlayer = danmakuPlayer,
+                )
+            }
         }
     }
 }

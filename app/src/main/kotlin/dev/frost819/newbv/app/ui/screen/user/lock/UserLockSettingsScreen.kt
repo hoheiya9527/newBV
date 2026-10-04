@@ -202,7 +202,7 @@ fun UserLockSettingsScreen(
                             InputState.InputNewPassword -> stringResource(R.string.lock_set_new)
                             InputState.ConfirmNewPassword -> stringResource(R.string.lock_confirm_new)
                         },
-                    style = MaterialTheme.typography.displaySmall,
+                    style = MaterialTheme.typography.headlineSmall,
                 )
 
                 val displayPassword =

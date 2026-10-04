@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "${AppConfiguration.appId}.danmaku.engine"
-    compileSdk = AppConfiguration.compileSdk
+    namespace = "${libs.versions.appNamespace.get()}.danmaku.engine"
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = AppConfiguration.minSdk
+        minSdk = libs.versions.minSdk.get().toInt()
         consumerProguardFiles("consumer-rules.pro")
     }
 

@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,10 +34,14 @@ import androidx.navigation.toRoute
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
 import dev.frost819.newbv.app.ui.component.focusSaverItem
 import dev.frost819.newbv.app.ui.component.rememberFocusSaver
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.component.videocard.SmallVideoCard
 import dev.frost819.newbv.app.ui.component.videocard.VideoCardData
 import dev.frost819.newbv.app.ui.navigation.UserSpaceRoute
@@ -48,8 +51,6 @@ import dev.frost819.newbv.app.util.toWanString
 import dev.frost819.newbv.app.viewmodel.common.CollectWatchLaterEffects
 import dev.frost819.newbv.app.viewmodel.common.WatchLaterViewModel
 import dev.frost819.newbv.app.viewmodel.user.UserSpaceViewModel
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 
 /**
  * 用户空间页。
@@ -107,7 +108,7 @@ private fun UserSpaceScreen(
 
     TvLazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(scaledGridColumns(4)),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -119,7 +120,7 @@ private fun UserSpaceScreen(
         itemsIndexed(
             items = state.videos,
             key = { _, item -> item.aid },
-        ) { index, video ->
+        ) { _, video ->
             val cardData =
                 remember(video) {
                     val durationMs = video.duration * 1000L
@@ -144,7 +145,7 @@ private fun UserSpaceScreen(
                     )
                 }
             SmallVideoCard(
-                modifier = Modifier.focusSaverItem(focusSaver, "user_space_$index"),
+                modifier = Modifier.focusSaverItem(focusSaver, "user_space_${video.aid}"),
                 data = cardData,
                 onClick = { navController.navigateFromVideoCard(cardData) },
                 onGoToDetailPage = {
@@ -191,8 +192,7 @@ private fun UserSpaceHeader(state: dev.frost819.newbv.app.viewmodel.user.UserSpa
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = state.name,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

@@ -1,8 +1,8 @@
 package dev.frost819.newbv.biliapi.entity.video
 
-import bilibili.app.view.v1.history
-import bilibili.app.view.v1.playerIcon
-import bilibili.app.view.v1.reqUser
+import bilibili.app.view.v1.History
+import bilibili.app.view.v1.PlayerIcon
+import bilibili.app.view.v1.ReqUser
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
@@ -245,10 +245,12 @@ class VideoDetailEntityTest {
     @Test
     fun `History fromHistory gRPC maps progress and cid`() {
         val grpcHistory =
-            history {
-                cid = 456L
-                progress = 120L
-            }
+            History
+                .newBuilder()
+                .apply {
+                    cid = 456L
+                    progress = 120L
+                }.build()
 
         val result = VideoDetail.History.fromHistory(grpcHistory)
 
@@ -259,10 +261,12 @@ class VideoDetailEntityTest {
     @Test
     fun `History fromHistory gRPC with zero progress`() {
         val grpcHistory =
-            history {
-                cid = 0L
-                progress = 0L
-            }
+            History
+                .newBuilder()
+                .apply {
+                    cid = 0L
+                    progress = 0L
+                }.build()
 
         val result = VideoDetail.History.fromHistory(grpcHistory)
 
@@ -273,10 +277,12 @@ class VideoDetailEntityTest {
     @Test
     fun `History fromHistory gRPC with negative progress`() {
         val grpcHistory =
-            history {
-                cid = 999L
-                progress = -1L
-            }
+            History
+                .newBuilder()
+                .apply {
+                    cid = 999L
+                    progress = -1L
+                }.build()
 
         val result = VideoDetail.History.fromHistory(grpcHistory)
 
@@ -287,14 +293,16 @@ class VideoDetailEntityTest {
     @Test
     fun `UserActions fromReqUser maps all actions as true`() {
         val grpcReqUser =
-            reqUser {
-                attention = 1
-                guestAttention = 0
-                favorite = 1
-                like = 1
-                dislike = 1
-                coin = 1
-            }
+            ReqUser
+                .newBuilder()
+                .apply {
+                    attention = 1
+                    guestAttention = 0
+                    favorite = 1
+                    like = 1
+                    dislike = 1
+                    coin = 1
+                }.build()
 
         val actions = UserActions.fromReqUser(grpcReqUser)
 
@@ -306,7 +314,7 @@ class VideoDetailEntityTest {
 
     @Test
     fun `UserActions fromReqUser maps all actions as false when zero`() {
-        val grpcReqUser = reqUser { }
+        val grpcReqUser = ReqUser.getDefaultInstance()
 
         val actions = UserActions.fromReqUser(grpcReqUser)
 
@@ -319,12 +327,14 @@ class VideoDetailEntityTest {
     @Test
     fun `UserActions fromReqUser maps mixed actions`() {
         val grpcReqUser =
-            reqUser {
-                like = 1
-                favorite = 0
-                coin = 1
-                dislike = 0
-            }
+            ReqUser
+                .newBuilder()
+                .apply {
+                    like = 1
+                    favorite = 0
+                    coin = 1
+                    dislike = 0
+                }.build()
 
         val actions = UserActions.fromReqUser(grpcReqUser)
 
@@ -337,10 +347,12 @@ class VideoDetailEntityTest {
     @Test
     fun `PlayerIcon fromPlayerIcon gRPC maps url2 to idle and url1 to moving`() {
         val grpcPlayerIcon =
-            playerIcon {
-                url1 = "http://moving.test"
-                url2 = "http://idle.test"
-            }
+            PlayerIcon
+                .newBuilder()
+                .apply {
+                    url1 = "http://moving.test"
+                    url2 = "http://idle.test"
+                }.build()
 
         val icon = VideoDetail.PlayerIcon.fromPlayerIcon(grpcPlayerIcon)
 
@@ -350,7 +362,7 @@ class VideoDetailEntityTest {
 
     @Test
     fun `PlayerIcon fromPlayerIcon gRPC with empty urls`() {
-        val grpcPlayerIcon = playerIcon { }
+        val grpcPlayerIcon = PlayerIcon.getDefaultInstance()
 
         val icon = VideoDetail.PlayerIcon.fromPlayerIcon(grpcPlayerIcon)
 

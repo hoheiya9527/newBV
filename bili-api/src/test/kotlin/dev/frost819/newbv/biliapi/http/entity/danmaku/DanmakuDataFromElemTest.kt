@@ -1,6 +1,6 @@
 package dev.frost819.newbv.biliapi.http.entity.danmaku
 
-import bilibili.community.service.dm.v1.danmakuElem
+import bilibili.community.service.dm.v1.DanmakuElem
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
@@ -15,18 +15,20 @@ class DanmakuDataFromElemTest {
     @Test
     fun `maps all proto fields with progress ms to time s`() {
         val elem =
-            danmakuElem {
-                id = 123456789L
-                progress = 61_500
-                mode = 4
-                fontsize = 25
-                color = 0xFFFFFF
-                midHash = "abcd1234"
-                content = "测试弹幕"
-                ctime = 1_700_000_000L
-                weight = 8
-                pool = 1
-            }
+            DanmakuElem
+                .newBuilder()
+                .apply {
+                    id = 123456789L
+                    progress = 61_500
+                    mode = 4
+                    fontsize = 25
+                    color = 0xFFFFFF
+                    midHash = "abcd1234"
+                    content = "测试弹幕"
+                    ctime = 1_700_000_000L
+                    weight = 8
+                    pool = 1
+                }.build()
 
         val data = DanmakuData.fromDanmakuElem(elem)
 
@@ -46,10 +48,12 @@ class DanmakuDataFromElemTest {
     fun `timestamp keeps ctime as seconds without dividing`() {
         // ctime 文档中已是秒级时间戳；若误除 1000 会得到约 1700000
         val elem =
-            danmakuElem {
-                ctime = 1_700_000_001L
-                content = "x"
-            }
+            DanmakuElem
+                .newBuilder()
+                .apply {
+                    ctime = 1_700_000_001L
+                    content = "x"
+                }.build()
         val data = DanmakuData.fromDanmakuElem(elem)
         assertThat(data.timestamp).isEqualTo(1_700_000_001)
     }
@@ -57,17 +61,19 @@ class DanmakuDataFromElemTest {
     @Test
     fun `weight maps to level for smart danmaku filtering`() {
         val elem =
-            danmakuElem {
-                weight = 3
-                content = "x"
-            }
+            DanmakuElem
+                .newBuilder()
+                .apply {
+                    weight = 3
+                    content = "x"
+                }.build()
         val data = DanmakuData.fromDanmakuElem(elem)
         assertThat(data.level).isEqualTo(3)
     }
 
     @Test
     fun `zero defaults map to zero entity fields`() {
-        val elem = danmakuElem {}
+        val elem = DanmakuElem.getDefaultInstance()
         val data = DanmakuData.fromDanmakuElem(elem)
         assertThat(data.time).isEqualTo(0f)
         assertThat(data.type).isEqualTo(0)

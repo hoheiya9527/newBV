@@ -1,10 +1,10 @@
 package dev.frost819.newbv.biliapi.entity.comment
 
-import bilibili.main.community.reply.v1.content
-import bilibili.main.community.reply.v1.member
-import bilibili.main.community.reply.v1.picture
-import bilibili.main.community.reply.v1.replyControl
-import bilibili.main.community.reply.v1.replyInfo
+import bilibili.main.community.reply.v1.Content
+import bilibili.main.community.reply.v1.Member
+import bilibili.main.community.reply.v1.Picture
+import bilibili.main.community.reply.v1.ReplyControl
+import bilibili.main.community.reply.v1.ReplyInfo
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.junit.jupiter.api.Test
@@ -73,33 +73,47 @@ class CommentTest {
     fun `fromGrpc maps reply info into unified comment`() {
         val comment =
             Comment.fromGrpc(
-                replyInfo {
-                    id = 123L
-                    oid = 456L
-                    type = 1L
-                    mid = 789L
-                    root = 10L
-                    parent = 11L
-                    like = 12L
-                    count = 3L
-                    ctime = 1700000000L
-                    member =
-                        member {
-                            name = "测试用户"
-                            face = "https://example.com/avatar.png"
-                            level = 6L
-                        }
-                    content =
-                        content {
-                            message = "测试评论"
-                            pictures += picture { imgSrc = "https://example.com/picture.png" }
-                        }
-                    replyControl =
-                        replyControl {
-                            action = 1L
-                            upLike = true
-                        }
-                },
+                ReplyInfo
+                    .newBuilder()
+                    .apply {
+                        id = 123L
+                        oid = 456L
+                        type = 1L
+                        mid = 789L
+                        root = 10L
+                        parent = 11L
+                        like = 12L
+                        count = 3L
+                        ctime = 1700000000L
+                        member =
+                            Member
+                                .newBuilder()
+                                .apply {
+                                    name = "测试用户"
+                                    face = "https://example.com/avatar.png"
+                                    level = 6L
+                                }.build()
+                        content =
+                            Content
+                                .newBuilder()
+                                .apply {
+                                    message = "测试评论"
+                                    addPictures(
+                                        Picture
+                                            .newBuilder()
+                                            .apply {
+                                                imgSrc = "https://example.com/picture.png"
+                                            }.build(),
+                                    )
+                                }.build()
+                        replyControl =
+                            ReplyControl
+                                .newBuilder()
+                                .apply {
+                                    action = 1L
+                                    upLike = true
+                                }.build()
+                    }.build(),
                 oid = 456L,
             )
 

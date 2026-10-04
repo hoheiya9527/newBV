@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,12 +16,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
 import dev.frost819.newbv.app.ui.component.focusSaverItem
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.component.videocard.SmallVideoCard
 import dev.frost819.newbv.app.ui.component.videocard.VideoCardData
+import dev.frost819.newbv.app.ui.component.videocard.videoGridSkeleton
 import dev.frost819.newbv.app.ui.navigation.UserSpaceRoute
 import dev.frost819.newbv.app.ui.navigation.navigateFromVideoCard
 import dev.frost819.newbv.app.util.formatHourMinSec
@@ -29,8 +34,6 @@ import dev.frost819.newbv.app.util.toWanString
 import dev.frost819.newbv.app.viewmodel.common.CollectWatchLaterEffects
 import dev.frost819.newbv.app.viewmodel.common.WatchLaterViewModel
 import dev.frost819.newbv.app.viewmodel.home.HomeViewModel
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 
 /**
  * 热门视频列表页。
@@ -66,15 +69,19 @@ fun PopularScreen(
     TvLazyVerticalGrid(
         modifier = modifier,
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(scaledGridColumns(4)),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        itemsIndexed(
+        videoGridSkeleton(
+            visible = state.popularItems.isEmpty() && state.popularLoading,
+            keyPrefix = "popular",
+        )
+        items(
             items = state.popularItems,
-            key = { index, _ -> index },
-        ) { index, item ->
+            key = { item -> item.aid },
+        ) { item ->
             val cardData =
                 remember(item) {
                     VideoCardData(
@@ -91,7 +98,7 @@ fun PopularScreen(
                     )
                 }
             SmallVideoCard(
-                modifier = Modifier.focusSaverItem(focusSaver, "popular_$index"),
+                modifier = Modifier.focusSaverItem(focusSaver, "popular_${item.aid}"),
                 data = cardData,
                 onClick = {
                     navController.navigateFromVideoCard(cardData)
@@ -109,7 +116,7 @@ fun PopularScreen(
 
         item(span = { GridItemSpan(maxLineSpan) }) {
             ListFooterTip(
-                isLoading = state.popularLoading,
+                isLoading = state.popularLoading && state.popularItems.isNotEmpty(),
                 isError = state.popularError,
                 hasMore = state.popularHasMore,
                 itemsIsEmpty = state.popularItems.isEmpty(),

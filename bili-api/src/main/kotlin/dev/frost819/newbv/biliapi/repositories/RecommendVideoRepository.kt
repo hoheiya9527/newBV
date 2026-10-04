@@ -1,7 +1,7 @@
 package dev.frost819.newbv.biliapi.repositories
 
 import bilibili.app.show.v1.PopularGrpcKt
-import bilibili.app.show.v1.popularResultReq
+import bilibili.app.show.v1.PopularResultReq
 import dev.frost819.newbv.biliapi.entity.ApiType
 import dev.frost819.newbv.biliapi.entity.home.RecommendData
 import dev.frost819.newbv.biliapi.entity.home.RecommendPage
@@ -53,9 +53,7 @@ class RecommendVideoRepository(
                         ?: throw IllegalStateException("App gRPC channel is not initialized")
                 val reply =
                     stub.index(
-                        popularResultReq {
-                            idx = page.nextAppIndex.toLong()
-                        },
+                        PopularResultReq.newBuilder().setIdx(page.nextAppIndex.toLong()).build(),
                     )
                 val list =
                     reply

@@ -1,14 +1,14 @@
 package dev.frost819.newbv.biliapi.repositories
 
-import bilibili.pagination.paginationReply
+import bilibili.pagination.PaginationReply
+import bilibili.polymer.app.search.v1.Item
+import bilibili.polymer.app.search.v1.SearchBangumiCard
 import bilibili.polymer.app.search.v1.SearchByTypeRequest
-import bilibili.polymer.app.search.v1.item
-import bilibili.polymer.app.search.v1.searchBangumiCard
-import bilibili.polymer.app.search.v1.searchByTypeResponse
-import bilibili.polymer.app.search.v1.searchUpperCard
-import bilibili.polymer.app.search.v1.searchVideoCard
-import bilibili.polymer.app.search.v1.share
-import bilibili.polymer.app.search.v1.video
+import bilibili.polymer.app.search.v1.SearchByTypeResponse
+import bilibili.polymer.app.search.v1.SearchUpperCard
+import bilibili.polymer.app.search.v1.SearchVideoCard
+import bilibili.polymer.app.search.v1.Share
+import bilibili.polymer.app.search.v1.Video as SearchShareVideo
 import com.google.common.truth.Truth.assertThat
 import dev.frost819.newbv.biliapi.http.entity.search.SearchBiliUserResult
 import dev.frost819.newbv.biliapi.http.entity.search.SearchMediaResult
@@ -397,9 +397,16 @@ class SearchRepositoryHelpersTest {
     @Test
     fun `fromSearchTypeResult gRPC with empty items returns empty result`() {
         val response =
-            searchByTypeResponse {
-                pagination = paginationReply { next = "cursor-next" }
-            }
+            SearchByTypeResponse
+                .newBuilder()
+                .apply {
+                    pagination =
+                        PaginationReply
+                            .newBuilder()
+                            .apply {
+                                next = "cursor-next"
+                            }.build()
+                }.build()
 
         val result = SearchTypeResult.fromSearchTypeResult(response)
 
@@ -496,30 +503,46 @@ class SearchRepositoryHelpersTest {
     @Test
     fun `fromSearchTypeResult gRPC with AV items maps to Video list`() {
         val response =
-            searchByTypeResponse {
-                pagination = paginationReply { next = "cursor-av" }
-                items +=
-                    item {
-                        param = "100"
-                        av =
-                            searchVideoCard {
-                                title = "gRPC视频"
-                                cover = "http://cover.grpc/1.jpg"
-                                author = "gRPC UP"
-                                mid = 1L
-                                duration = "5:30"
-                                play = 500
-                                danmaku = 20
-                                share =
-                                    share {
-                                        video =
-                                            video {
-                                                bvid = "BVgRPC1"
-                                            }
-                                    }
-                            }
-                    }
-            }
+            SearchByTypeResponse
+                .newBuilder()
+                .apply {
+                    pagination =
+                        PaginationReply
+                            .newBuilder()
+                            .apply {
+                                next = "cursor-av"
+                            }.build()
+                    addItems(
+                        Item
+                            .newBuilder()
+                            .apply {
+                                param = "100"
+                                av =
+                                    SearchVideoCard
+                                        .newBuilder()
+                                        .apply {
+                                            title = "gRPC视频"
+                                            cover = "http://cover.grpc/1.jpg"
+                                            author = "gRPC UP"
+                                            mid = 1L
+                                            duration = "5:30"
+                                            play = 500
+                                            danmaku = 20
+                                            share =
+                                                Share
+                                                    .newBuilder()
+                                                    .apply {
+                                                        video =
+                                                            SearchShareVideo
+                                                                .newBuilder()
+                                                                .apply {
+                                                                    bvid = "BVgRPC1"
+                                                                }.build()
+                                                    }.build()
+                                        }.build()
+                            }.build(),
+                    )
+                }.build()
 
         val result = SearchTypeResult.fromSearchTypeResult(response)
 
@@ -543,19 +566,31 @@ class SearchRepositoryHelpersTest {
     @Test
     fun `fromSearchTypeResult gRPC with BANGUMI items maps to Pgc list`() {
         val response =
-            searchByTypeResponse {
-                pagination = paginationReply { next = "cursor-bg" }
-                items +=
-                    item {
-                        bangumi =
-                            searchBangumiCard {
-                                title = "gRPC番剧"
-                                cover = "http://cover.bg/1.jpg"
-                                rating = 9.0
-                                seasonId = 40000L
-                            }
-                    }
-            }
+            SearchByTypeResponse
+                .newBuilder()
+                .apply {
+                    pagination =
+                        PaginationReply
+                            .newBuilder()
+                            .apply {
+                                next = "cursor-bg"
+                            }.build()
+                    addItems(
+                        Item
+                            .newBuilder()
+                            .apply {
+                                bangumi =
+                                    SearchBangumiCard
+                                        .newBuilder()
+                                        .apply {
+                                            title = "gRPC番剧"
+                                            cover = "http://cover.bg/1.jpg"
+                                            rating = 9.0
+                                            seasonId = 40000L
+                                        }.build()
+                            }.build(),
+                    )
+                }.build()
 
         val result = SearchTypeResult.fromSearchTypeResult(response)
 
@@ -574,19 +609,31 @@ class SearchRepositoryHelpersTest {
     @Test
     fun `fromSearchTypeResult gRPC with AUTHOR items maps to User list`() {
         val response =
-            searchByTypeResponse {
-                pagination = paginationReply { next = "cursor-user" }
-                items +=
-                    item {
-                        param = "555"
-                        author =
-                            searchUpperCard {
-                                title = "gRPC用户"
-                                cover = "http://avatar.grpc/1.jpg"
-                                sign = "gRPC签名"
-                            }
-                    }
-            }
+            SearchByTypeResponse
+                .newBuilder()
+                .apply {
+                    pagination =
+                        PaginationReply
+                            .newBuilder()
+                            .apply {
+                                next = "cursor-user"
+                            }.build()
+                    addItems(
+                        Item
+                            .newBuilder()
+                            .apply {
+                                param = "555"
+                                author =
+                                    SearchUpperCard
+                                        .newBuilder()
+                                        .apply {
+                                            title = "gRPC用户"
+                                            cover = "http://avatar.grpc/1.jpg"
+                                            sign = "gRPC签名"
+                                        }.build()
+                            }.build(),
+                    )
+                }.build()
 
         val result = SearchTypeResult.fromSearchTypeResult(response)
 
@@ -605,13 +652,23 @@ class SearchRepositoryHelpersTest {
     @Test
     fun `fromSearchTypeResult gRPC with unknown card type returns empty lists`() {
         val response =
-            searchByTypeResponse {
-                pagination = paginationReply { next = "cursor-unknown" }
-                items +=
-                    item {
-                        uri = "some-uri"
-                    }
-            }
+            SearchByTypeResponse
+                .newBuilder()
+                .apply {
+                    pagination =
+                        PaginationReply
+                            .newBuilder()
+                            .apply {
+                                next = "cursor-unknown"
+                            }.build()
+                    addItems(
+                        Item
+                            .newBuilder()
+                            .apply {
+                                uri = "some-uri"
+                            }.build(),
+                    )
+                }.build()
 
         val result = SearchTypeResult.fromSearchTypeResult(response)
 
@@ -628,26 +685,34 @@ class SearchRepositoryHelpersTest {
     @Test
     fun `fromSearchVideoCard maps all fields from gRPC Item`() {
         val grpcItem =
-            item {
-                param = "200"
-                av =
-                    searchVideoCard {
-                        title = "card视频"
-                        cover = "http://cover.card/1.jpg"
-                        author = "card UP"
-                        mid = 2L
-                        duration = "10:00"
-                        play = 1000
-                        danmaku = 50
-                        share =
-                            share {
-                                video =
-                                    video {
-                                        bvid = "BVcard1"
-                                    }
-                            }
-                    }
-            }
+            Item
+                .newBuilder()
+                .apply {
+                    param = "200"
+                    av =
+                        SearchVideoCard
+                            .newBuilder()
+                            .apply {
+                                title = "card视频"
+                                cover = "http://cover.card/1.jpg"
+                                author = "card UP"
+                                mid = 2L
+                                duration = "10:00"
+                                play = 1000
+                                danmaku = 50
+                                share =
+                                    Share
+                                        .newBuilder()
+                                        .apply {
+                                            video =
+                                                SearchShareVideo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        bvid = "BVcard1"
+                                                    }.build()
+                                        }.build()
+                            }.build()
+                }.build()
 
         val video = SearchTypeResult.Video.fromSearchVideoCard(grpcItem)
 
@@ -669,15 +734,19 @@ class SearchRepositoryHelpersTest {
     @Test
     fun `fromSearchPgcCard maps all fields from gRPC Item`() {
         val grpcItem =
-            item {
-                bangumi =
-                    searchBangumiCard {
-                        title = "card番剧"
-                        cover = "http://cover.pgc/1.jpg"
-                        rating = 8.5
-                        seasonId = 30000L
-                    }
-            }
+            Item
+                .newBuilder()
+                .apply {
+                    bangumi =
+                        SearchBangumiCard
+                            .newBuilder()
+                            .apply {
+                                title = "card番剧"
+                                cover = "http://cover.pgc/1.jpg"
+                                rating = 8.5
+                                seasonId = 30000L
+                            }.build()
+                }.build()
 
         val pgc = SearchTypeResult.Pgc.fromSearchPgcCard(grpcItem)
 
@@ -694,15 +763,19 @@ class SearchRepositoryHelpersTest {
     @Test
     fun `fromSearchUserCard maps all fields from gRPC Item`() {
         val grpcItem =
-            item {
-                param = "999"
-                author =
-                    searchUpperCard {
-                        title = "card用户"
-                        cover = "http://avatar.card/1.jpg"
-                        sign = "card签名"
-                    }
-            }
+            Item
+                .newBuilder()
+                .apply {
+                    param = "999"
+                    author =
+                        SearchUpperCard
+                            .newBuilder()
+                            .apply {
+                                title = "card用户"
+                                cover = "http://avatar.card/1.jpg"
+                                sign = "card签名"
+                            }.build()
+                }.build()
 
         val user = SearchTypeResult.User.fromSearchUserCard(grpcItem)
 

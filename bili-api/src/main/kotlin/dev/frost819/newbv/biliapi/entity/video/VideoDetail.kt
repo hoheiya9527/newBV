@@ -2,7 +2,6 @@ package dev.frost819.newbv.biliapi.entity.video
 
 import bilibili.app.view.v1.ReqUser
 import bilibili.app.view.v1.ViewReply
-import bilibili.app.view.v1.ugcSeasonOrNull
 import dev.frost819.newbv.biliapi.entity.user.Author
 import dev.frost819.newbv.biliapi.entity.video.season.UgcSeason
 import dev.frost819.newbv.biliapi.http.entity.video.VideoStat
@@ -44,7 +43,7 @@ data class VideoDetail(
                     stat = Stat.fromStat(viewReply.arc.stat),
                     author = Author.fromAuthor(viewReply.arc.author),
                     pages = viewReply.pagesList.map { VideoPage.fromViewPage(it) },
-                    ugcSeason = viewReply.ugcSeasonOrNull?.let { UgcSeason.fromUgcSeason(it) },
+                    ugcSeason = viewReply.takeIf { it.hasUgcSeason() }?.ugcSeason?.let { UgcSeason.fromUgcSeason(it) },
                     relatedVideos = viewReply.relatesList.map { RelatedVideo.fromRelate(it) },
                     redirectToEp = viewReply.arc.redirectUrl.contains("ep"),
                     epid =
@@ -57,7 +56,8 @@ data class VideoDetail(
                     tags = viewReply.tagList.map { Tag.fromTag(it) },
                     userActions = UserActions.fromReqUser(viewReply.reqUser),
                     history = History.fromHistory(viewReply.history),
-                    playerIcon = viewReply.playerIcon?.let { PlayerIcon.fromPlayerIcon(it) },
+                    playerIcon =
+                        viewReply.takeIf { it.hasPlayerIcon() }?.let { PlayerIcon.fromPlayerIcon(it.playerIcon) },
                 )
             } else {
                 return VideoDetail(
@@ -72,7 +72,7 @@ data class VideoDetail(
                     author = Author.fromAuthor(viewReply.activitySeason.arc.author),
                     pages = viewReply.activitySeason.pagesList.map { VideoPage.fromViewPage(it) },
                     ugcSeason =
-                        viewReply.activitySeason.ugcSeasonOrNull?.let {
+                        viewReply.activitySeason.takeIf { it.hasUgcSeason() }?.ugcSeason?.let {
                             UgcSeason.fromUgcSeason(
                                 it,
                             )
@@ -92,9 +92,9 @@ data class VideoDetail(
                     userActions = UserActions.fromReqUser(viewReply.activitySeason.reqUser),
                     history = History.fromHistory(viewReply.activitySeason.history),
                     playerIcon =
-                        viewReply.activitySeason.playerIcon?.let {
+                        viewReply.activitySeason.takeIf { it.hasPlayerIcon() }?.let {
                             PlayerIcon.fromPlayerIcon(
-                                it,
+                                it.playerIcon,
                             )
                         },
                 )

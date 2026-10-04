@@ -1,16 +1,16 @@
 package dev.frost819.newbv.biliapi.entity
 
-import bilibili.app.playerunite.v1.playViewUniteReply
-import bilibili.pgc.gateway.player.v2.dashItem
-import bilibili.pgc.gateway.player.v2.dashVideo
-import bilibili.pgc.gateway.player.v2.dolbyItem
-import bilibili.pgc.gateway.player.v2.playViewBusinessInfo
-import bilibili.pgc.gateway.player.v2.playViewReply
-import bilibili.pgc.gateway.player.v2.responseUrl
-import bilibili.pgc.gateway.player.v2.segmentVideo
-import bilibili.pgc.gateway.player.v2.stream
-import bilibili.pgc.gateway.player.v2.streamInfo
-import bilibili.pgc.gateway.player.v2.videoInfo
+import bilibili.app.playerunite.v1.PlayViewUniteReply
+import bilibili.pgc.gateway.player.v2.DashItem
+import bilibili.pgc.gateway.player.v2.DashVideo as PgcDashVideo
+import bilibili.pgc.gateway.player.v2.DolbyItem
+import bilibili.pgc.gateway.player.v2.PlayViewBusinessInfo
+import bilibili.pgc.gateway.player.v2.PlayViewReply
+import bilibili.pgc.gateway.player.v2.ResponseUrl
+import bilibili.pgc.gateway.player.v2.SegmentVideo
+import bilibili.pgc.gateway.player.v2.Stream
+import bilibili.pgc.gateway.player.v2.StreamInfo
+import bilibili.pgc.gateway.player.v2.VideoInfo
 import com.google.common.truth.Truth.assertThat
 import dev.frost819.newbv.biliapi.http.entity.video.Dash
 import dev.frost819.newbv.biliapi.http.entity.video.DashData
@@ -22,15 +22,15 @@ import dev.frost819.newbv.biliapi.http.entity.video.PlayUrlV2Data
 import dev.frost819.newbv.biliapi.http.entity.video.SegmentBase
 import dev.frost819.newbv.biliapi.http.entity.video.SupportFormat
 import org.junit.jupiter.api.Test
-import bilibili.playershared.dashItem as sharedDashItem
-import bilibili.playershared.dashVideo as sharedDashVideo
-import bilibili.playershared.dolbyItem as sharedDolbyItem
-import bilibili.playershared.lossLessItem as sharedLossLessItem
-import bilibili.playershared.responseUrl as sharedResponseUrl
-import bilibili.playershared.segmentVideo as sharedSegmentVideo
-import bilibili.playershared.stream as sharedStream
-import bilibili.playershared.streamInfo as sharedStreamInfo
-import bilibili.playershared.vodInfo as sharedVodInfo
+import bilibili.playershared.DashItem as SharedDashItem
+import bilibili.playershared.DashVideo as SharedDashVideo
+import bilibili.playershared.DolbyItem as SharedDolbyItem
+import bilibili.playershared.LossLessItem as SharedLossLessItem
+import bilibili.playershared.ResponseUrl as SharedResponseUrl
+import bilibili.playershared.SegmentVideo as SharedSegmentVideo
+import bilibili.playershared.Stream as SharedStream
+import bilibili.playershared.StreamInfo as SharedStreamInfo
+import bilibili.playershared.VodInfo as SharedVodInfo
 
 /**
  * [PlayData] 实体的单元测试。
@@ -1418,51 +1418,74 @@ class PlayDataTest {
     @Test
     fun `fromPlayViewUniteReply maps dashVideo streams with audio dolby and flac`() {
         val reply =
-            playViewUniteReply {
-                vodInfo =
-                    sharedVodInfo {
-                        streamList +=
-                            sharedStream {
-                                streamInfo =
-                                    sharedStreamInfo {
-                                        quality = 80
-                                    }
-                                dashVideo =
-                                    sharedDashVideo {
-                                        baseUrl = "http://cdn.test/video-80.m4s"
-                                        bandwidth = 1_000_000
-                                        codecid = 7
-                                        width = 1920
-                                        height = 1080
-                                        frameRate = "30"
-                                    }
-                            }
-                        dashAudio +=
-                            sharedDashItem {
-                                id = 30280
-                                baseUrl = "http://cdn.test/audio.m4s"
-                                bandwidth = 500_000
-                            }
-                        dolby =
-                            sharedDolbyItem {
-                                audio +=
-                                    sharedDashItem {
-                                        id = 30250
-                                        baseUrl = "http://cdn.test/dolby.m4s"
-                                        bandwidth = 320_000
-                                    }
-                            }
-                        lossLessItem =
-                            sharedLossLessItem {
-                                audio =
-                                    sharedDashItem {
-                                        id = 30251
-                                        baseUrl = "http://cdn.test/flac.m4s"
-                                        bandwidth = 400_000
-                                    }
-                            }
-                    }
-            }
+            PlayViewUniteReply
+                .newBuilder()
+                .apply {
+                    vodInfo =
+                        SharedVodInfo
+                            .newBuilder()
+                            .apply {
+                                addStreamList(
+                                    SharedStream
+                                        .newBuilder()
+                                        .apply {
+                                            streamInfo =
+                                                SharedStreamInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        quality = 80
+                                                    }.build()
+                                            dashVideo =
+                                                SharedDashVideo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        baseUrl = "http://cdn.test/video-80.m4s"
+                                                        bandwidth = 1_000_000
+                                                        codecid = 7
+                                                        width = 1920
+                                                        height = 1080
+                                                        frameRate = "30"
+                                                    }.build()
+                                        }.build(),
+                                )
+                                addDashAudio(
+                                    SharedDashItem
+                                        .newBuilder()
+                                        .apply {
+                                            id = 30280
+                                            baseUrl = "http://cdn.test/audio.m4s"
+                                            bandwidth = 500_000
+                                        }.build(),
+                                )
+                                dolby =
+                                    SharedDolbyItem
+                                        .newBuilder()
+                                        .apply {
+                                            addAudio(
+                                                SharedDashItem
+                                                    .newBuilder()
+                                                    .apply {
+                                                        id = 30250
+                                                        baseUrl = "http://cdn.test/dolby.m4s"
+                                                        bandwidth = 320_000
+                                                    }.build(),
+                                            )
+                                        }.build()
+                                lossLessItem =
+                                    SharedLossLessItem
+                                        .newBuilder()
+                                        .apply {
+                                            audio =
+                                                SharedDashItem
+                                                    .newBuilder()
+                                                    .apply {
+                                                        id = 30251
+                                                        baseUrl = "http://cdn.test/flac.m4s"
+                                                        bandwidth = 400_000
+                                                    }.build()
+                                        }.build()
+                            }.build()
+                }.build()
 
         val playData = PlayData.fromPlayViewUniteReply(reply)
 
@@ -1484,25 +1507,39 @@ class PlayDataTest {
     @Test
     fun `fromPlayViewUniteReply with segmentVideo only sets needPay true`() {
         val reply =
-            playViewUniteReply {
-                vodInfo =
-                    sharedVodInfo {
-                        streamList +=
-                            sharedStream {
-                                streamInfo =
-                                    sharedStreamInfo {
-                                        quality = 64
-                                    }
-                                segmentVideo =
-                                    sharedSegmentVideo {
-                                        segment +=
-                                            sharedResponseUrl {
-                                                url = "http://cdn.test/preview.m4s"
-                                            }
-                                    }
-                            }
-                    }
-            }
+            PlayViewUniteReply
+                .newBuilder()
+                .apply {
+                    vodInfo =
+                        SharedVodInfo
+                            .newBuilder()
+                            .apply {
+                                addStreamList(
+                                    SharedStream
+                                        .newBuilder()
+                                        .apply {
+                                            streamInfo =
+                                                SharedStreamInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        quality = 64
+                                                    }.build()
+                                            segmentVideo =
+                                                SharedSegmentVideo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        addSegment(
+                                                            SharedResponseUrl
+                                                                .newBuilder()
+                                                                .apply {
+                                                                    url = "http://cdn.test/preview.m4s"
+                                                                }.build(),
+                                                        )
+                                                    }.build()
+                                        }.build(),
+                                )
+                            }.build()
+                }.build()
 
         val playData = PlayData.fromPlayViewUniteReply(reply)
 
@@ -1515,9 +1552,11 @@ class PlayDataTest {
     @Test
     fun `fromPlayViewUniteReply with empty streams returns empty lists`() {
         val reply =
-            playViewUniteReply {
-                vodInfo = sharedVodInfo {}
-            }
+            PlayViewUniteReply
+                .newBuilder()
+                .apply {
+                    vodInfo = SharedVodInfo.getDefaultInstance()
+                }.build()
 
         val playData = PlayData.fromPlayViewUniteReply(reply)
 
@@ -1531,28 +1570,46 @@ class PlayDataTest {
     @Test
     fun `fromPlayViewUniteReply with lossLessItem id zero returns null flac`() {
         val reply =
-            playViewUniteReply {
-                vodInfo =
-                    sharedVodInfo {
-                        streamList +=
-                            sharedStream {
-                                streamInfo = sharedStreamInfo { quality = 80 }
-                                dashVideo =
-                                    sharedDashVideo {
-                                        baseUrl = "http://cdn.test/video.m4s"
-                                        codecid = 7
-                                    }
-                            }
-                        lossLessItem =
-                            sharedLossLessItem {
-                                audio =
-                                    sharedDashItem {
-                                        id = 0
-                                        baseUrl = ""
-                                    }
-                            }
-                    }
-            }
+            PlayViewUniteReply
+                .newBuilder()
+                .apply {
+                    vodInfo =
+                        SharedVodInfo
+                            .newBuilder()
+                            .apply {
+                                addStreamList(
+                                    SharedStream
+                                        .newBuilder()
+                                        .apply {
+                                            streamInfo =
+                                                SharedStreamInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        quality = 80
+                                                    }.build()
+                                            dashVideo =
+                                                SharedDashVideo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        baseUrl = "http://cdn.test/video.m4s"
+                                                        codecid = 7
+                                                    }.build()
+                                        }.build(),
+                                )
+                                lossLessItem =
+                                    SharedLossLessItem
+                                        .newBuilder()
+                                        .apply {
+                                            audio =
+                                                SharedDashItem
+                                                    .newBuilder()
+                                                    .apply {
+                                                        id = 0
+                                                        baseUrl = ""
+                                                    }.build()
+                                        }.build()
+                            }.build()
+                }.build()
 
         val playData = PlayData.fromPlayViewUniteReply(reply)
 
@@ -1566,40 +1623,66 @@ class PlayDataTest {
     @Test
     fun `fromPgcPlayViewReply maps dashVideo streams with audio and dolby`() {
         val reply =
-            playViewReply {
-                videoInfo =
-                    videoInfo {
-                        streamList +=
-                            stream {
-                                info = streamInfo { quality = 80 }
-                                dashVideo =
-                                    dashVideo {
-                                        baseUrl = "http://cdn.test/pgc-video.m4s"
-                                        bandwidth = 2_000_000
-                                        codecid = 7
-                                        width = 1920
-                                        height = 1080
-                                        frameRate = "60"
-                                    }
-                            }
-                        dashAudio +=
-                            dashItem {
-                                id = 30280
-                                baseUrl = "http://cdn.test/pgc-audio.m4s"
-                                bandwidth = 500_000
-                            }
-                        dolby =
-                            dolbyItem {
-                                audio =
-                                    dashItem {
-                                        id = 30250
-                                        baseUrl = "http://cdn.test/pgc-dolby.m4s"
-                                        bandwidth = 320_000
-                                    }
-                            }
-                    }
-                business = playViewBusinessInfo { isPreview = false }
-            }
+            PlayViewReply
+                .newBuilder()
+                .apply {
+                    videoInfo =
+                        VideoInfo
+                            .newBuilder()
+                            .apply {
+                                addStreamList(
+                                    Stream
+                                        .newBuilder()
+                                        .apply {
+                                            info =
+                                                StreamInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        quality = 80
+                                                    }.build()
+                                            dashVideo =
+                                                PgcDashVideo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        baseUrl = "http://cdn.test/pgc-video.m4s"
+                                                        bandwidth = 2_000_000
+                                                        codecid = 7
+                                                        width = 1920
+                                                        height = 1080
+                                                        frameRate = "60"
+                                                    }.build()
+                                        }.build(),
+                                )
+                                addDashAudio(
+                                    DashItem
+                                        .newBuilder()
+                                        .apply {
+                                            id = 30280
+                                            baseUrl = "http://cdn.test/pgc-audio.m4s"
+                                            bandwidth = 500_000
+                                        }.build(),
+                                )
+                                dolby =
+                                    DolbyItem
+                                        .newBuilder()
+                                        .apply {
+                                            audio =
+                                                DashItem
+                                                    .newBuilder()
+                                                    .apply {
+                                                        id = 30250
+                                                        baseUrl = "http://cdn.test/pgc-dolby.m4s"
+                                                        bandwidth = 320_000
+                                                    }.build()
+                                        }.build()
+                            }.build()
+                    business =
+                        PlayViewBusinessInfo
+                            .newBuilder()
+                            .apply {
+                                isPreview = false
+                            }.build()
+                }.build()
 
         val playData = PlayData.fromPgcPlayViewReply(reply)
 
@@ -1617,23 +1700,45 @@ class PlayDataTest {
     @Test
     fun `fromPgcPlayViewReply with isPreview true sets needPay true`() {
         val reply =
-            playViewReply {
-                videoInfo =
-                    videoInfo {
-                        streamList +=
-                            stream {
-                                info = streamInfo { quality = 64 }
-                                segmentVideo =
-                                    segmentVideo {
-                                        segment +=
-                                            responseUrl {
-                                                url = "http://cdn.test/pgc-preview.m4s"
-                                            }
-                                    }
-                            }
-                    }
-                business = playViewBusinessInfo { isPreview = true }
-            }
+            PlayViewReply
+                .newBuilder()
+                .apply {
+                    videoInfo =
+                        VideoInfo
+                            .newBuilder()
+                            .apply {
+                                addStreamList(
+                                    Stream
+                                        .newBuilder()
+                                        .apply {
+                                            info =
+                                                StreamInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        quality = 64
+                                                    }.build()
+                                            segmentVideo =
+                                                SegmentVideo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        addSegment(
+                                                            ResponseUrl
+                                                                .newBuilder()
+                                                                .apply {
+                                                                    url = "http://cdn.test/pgc-preview.m4s"
+                                                                }.build(),
+                                                        )
+                                                    }.build()
+                                        }.build(),
+                                )
+                            }.build()
+                    business =
+                        PlayViewBusinessInfo
+                            .newBuilder()
+                            .apply {
+                                isPreview = true
+                            }.build()
+                }.build()
 
         val playData = PlayData.fromPgcPlayViewReply(reply)
 
@@ -1645,10 +1750,17 @@ class PlayDataTest {
     @Test
     fun `fromPgcPlayViewReply with empty streams returns empty lists`() {
         val reply =
-            playViewReply {
-                videoInfo = videoInfo {}
-                business = playViewBusinessInfo { isPreview = false }
-            }
+            PlayViewReply
+                .newBuilder()
+                .apply {
+                    videoInfo = VideoInfo.getDefaultInstance()
+                    business =
+                        PlayViewBusinessInfo
+                            .newBuilder()
+                            .apply {
+                                isPreview = false
+                            }.build()
+                }.build()
 
         val playData = PlayData.fromPgcPlayViewReply(reply)
 

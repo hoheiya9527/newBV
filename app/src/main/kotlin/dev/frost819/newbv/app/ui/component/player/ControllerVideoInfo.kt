@@ -42,15 +42,11 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
@@ -89,6 +85,8 @@ import kotlinx.coroutines.delay
  * @param onSeekGoTime 确认 seek 回调
  * @param onSeekToPosition 触屏拖拽/点击进度条时 seek 到指定位置（毫秒）
  * @param onPlayPause 播放/暂停回调
+ * @param onPlayPrevious 播放上一 P 回调
+ * @param onPlayNext 播放下一 P 回调
  * @param onDanmakuSwitchChange 弹幕开关回调
  * @param onShowSettings 打开设置回调
  * @param onShowRelatedVideos 打开相关视频回调
@@ -118,6 +116,8 @@ fun ControllerVideoInfo(
     onSeekGoTime: () -> Unit,
     onSeekToPosition: (Long) -> Unit,
     onPlayPause: () -> Unit,
+    onPlayPrevious: () -> Unit,
+    onPlayNext: () -> Unit,
     onDanmakuSwitchChange: () -> Unit,
     onShowSettings: () -> Unit,
     onShowRelatedVideos: () -> Unit,
@@ -164,6 +164,8 @@ fun ControllerVideoInfo(
                 onSeekGoTime = onSeekGoTime,
                 onSeekToPosition = onSeekToPosition,
                 onPlayPause = onPlayPause,
+                onPlayPrevious = onPlayPrevious,
+                onPlayNext = onPlayNext,
                 onDanmakuSwitchChange = onDanmakuSwitchChange,
                 onShowSettings = onShowSettings,
                 onShowRelatedVideos = onShowRelatedVideos,
@@ -275,6 +277,8 @@ fun ControllerVideoInfoBottom(
     onSeekGoTime: () -> Unit,
     onSeekToPosition: (Long) -> Unit,
     onPlayPause: () -> Unit,
+    onPlayPrevious: () -> Unit,
+    onPlayNext: () -> Unit,
     onDanmakuSwitchChange: () -> Unit,
     onShowSettings: () -> Unit,
     onShowRelatedVideos: () -> Unit,
@@ -422,6 +426,8 @@ fun ControllerVideoInfoBottom(
         val icons =
             buildList {
                 add(ControllerIcon(R.drawable.play_pause_24px, "播放/暂停", onPlayPause))
+                add(ControllerIcon(R.drawable.skip_previous_24px, "上一P", onPlayPrevious))
+                add(ControllerIcon(R.drawable.skip_next_24px, "下一P", onPlayNext))
                 add(
                     ControllerIcon(
                         if (danmakuEnabled) R.drawable.danmaku_on_24px else R.drawable.danmaku_off_24px,
@@ -515,17 +521,13 @@ private fun Clock(
 ) {
     Text(
         modifier = modifier,
+        text = "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}",
         color = MaterialTheme.colorScheme.onSurface,
-        fontWeight = FontWeight.Bold,
-        style = TextStyle(shadow = Shadow(color = Color.Black, blurRadius = 1f)),
-        text =
-            buildAnnotatedString {
-                withStyle(SpanStyle(fontSize = 32.sp)) {
-                    append("$hour".padStart(2, '0'))
-                    append(":")
-                    append("$minute".padStart(2, '0'))
-                }
-            },
+        style =
+            MaterialTheme.typography.headlineLarge.copy(
+                fontWeight = FontWeight.Bold,
+                shadow = Shadow(color = Color.Black, blurRadius = 1f),
+            ),
     )
 }
 
@@ -558,6 +560,8 @@ private fun ControllerVideoInfoPreview() {
             onSeekGoTime = {},
             onSeekToPosition = {},
             onPlayPause = {},
+            onPlayPrevious = {},
+            onPlayNext = {},
             onDanmakuSwitchChange = {},
             onShowSettings = {},
             onShowRelatedVideos = {},

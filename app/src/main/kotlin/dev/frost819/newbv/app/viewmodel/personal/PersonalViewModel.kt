@@ -19,6 +19,7 @@ import dev.frost819.newbv.biliapi.repositories.ToViewRepository
 import dev.frost819.newbv.core.log.Loggers
 import dev.frost819.newbv.data.datastore.Prefs
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
+
 import dev.frost819.newbv.biliapi.entity.ApiType as BiliApiType
 import dev.frost819.newbv.data.datastore.ApiType as DataApiType
 
@@ -129,6 +131,8 @@ class PersonalViewModel
         private var favoritePageNumber: Int = 1
         private var followingPageNumber: Int = 1
         private var followingTotal: Int = 0
+        private var toViewJob: Job? = null
+        private var historyJob: Job? = null
 
         init {
             _uiState.update { it.copy(isLogin = Prefs.isLogin) }
@@ -148,31 +152,31 @@ class PersonalViewModel
          * 稍后再看接口不支持分页，一次性加载全部。
          */
         fun loadToView() {
-            viewModelScope.launch {
-                if (_uiState.value.toViewLoading) return@launch
+            if (toViewJob?.isActive == true) return
+            toViewJob =
+                viewModelScope.launch {
+                    _uiState.update { it.copy(toViewLoading = true, toViewError = false) }
 
-                _uiState.update { it.copy(toViewLoading = true, toViewError = false) }
+                    runCatching {
+                        withTimeout(LOAD_TIMEOUT_MS) {
+                            val data =
+                                toViewRepository.getToView(
+                                    cursor = 0,
+                                    preferApiType = prefApiType(),
+                                )
+                            toViewItems.clear()
+                            toViewItems.addAll(data.data)
+                        }
+                    }.onFailure { error ->
+                        if (error is CancellationException && error !is TimeoutCancellationException) {
+                            throw error
+                        }
+                        logger.error(error) { "Failed to load toview" }
+                        _uiState.update { it.copy(toViewError = true) }
+                    }
 
-                runCatching {
-                    withTimeout(LOAD_TIMEOUT_MS) {
-                        val data =
-                            toViewRepository.getToView(
-                                cursor = 0,
-                                preferApiType = prefApiType(),
-                            )
-                        toViewItems.clear()
-                        toViewItems.addAll(data.data)
-                    }
-                }.onFailure { error ->
-                    if (error is CancellationException && error !is TimeoutCancellationException) {
-                        throw error
-                    }
-                    logger.error(error) { "Failed to load toview" }
-                    _uiState.update { it.copy(toViewError = true) }
+                    _uiState.update { it.copy(toViewLoading = false) }
                 }
-
-                _uiState.update { it.copy(toViewLoading = false) }
-            }
         }
 
         /**
@@ -207,8 +211,10 @@ class PersonalViewModel
          * 刷新稍后再看列表。
          */
         fun refreshToView() {
+            toViewJob?.cancel()
+            toViewJob = null
             toViewItems.clear()
-            _uiState.update { it.copy(toViewError = false) }
+            _uiState.update { it.copy(toViewError = false, toViewLoading = false) }
             loadToView()
         }
 
@@ -223,46 +229,55 @@ class PersonalViewModel
          * 超过 [LOAD_TIMEOUT_MS] 未返回时标记为加载失败。
          */
         fun loadHistory() {
-            viewModelScope.launch {
-                val current = _uiState.value
-                if (current.historyLoading || !current.historyHasMore) return@launch
+            if (historyJob?.isActive == true) return
+            historyJob =
+                viewModelScope.launch {
+                    val current = _uiState.value
+                    if (!current.historyHasMore) return@launch
 
-                _uiState.update { it.copy(historyLoading = true, historyError = false) }
+                    _uiState.update { it.copy(historyLoading = true, historyError = false) }
 
-                runCatching {
-                    withTimeout(LOAD_TIMEOUT_MS) {
-                        val data =
-                            historyRepository.getHistories(
-                                cursor = historyCursor,
-                                preferApiType = prefApiType(),
-                            )
-                        historyCursor = data.cursor
-                        _uiState.update {
-                            it.copy(
-                                historyItems = it.historyItems + data.data,
-                                historyHasMore = data.cursor != 0L,
-                            )
+                    runCatching {
+                        withTimeout(LOAD_TIMEOUT_MS) {
+                            val data =
+                                historyRepository.getHistories(
+                                    cursor = historyCursor,
+                                    preferApiType = prefApiType(),
+                                )
+                            historyCursor = data.cursor
+                            _uiState.update {
+                                it.copy(
+                                    historyItems = it.historyItems + data.data,
+                                    historyHasMore = data.cursor != 0L,
+                                )
+                            }
                         }
+                    }.onFailure { error ->
+                        if (error is CancellationException && error !is TimeoutCancellationException) {
+                            throw error
+                        }
+                        logger.error(error) { "Failed to load history" }
+                        _uiState.update { it.copy(historyError = true) }
                     }
-                }.onFailure { error ->
-                    if (error is CancellationException && error !is TimeoutCancellationException) {
-                        throw error
-                    }
-                    logger.error(error) { "Failed to load history" }
-                    _uiState.update { it.copy(historyError = true) }
-                }
 
-                _uiState.update { it.copy(historyLoading = false) }
-            }
+                    _uiState.update { it.copy(historyLoading = false) }
+                }
         }
 
         /**
          * 刷新历史记录。
          */
         fun refreshHistory() {
+            historyJob?.cancel()
+            historyJob = null
             historyCursor = 0L
             _uiState.update {
-                it.copy(historyItems = emptyList(), historyHasMore = true, historyError = false)
+                it.copy(
+                    historyItems = emptyList(),
+                    historyHasMore = true,
+                    historyError = false,
+                    historyLoading = false,
+                )
             }
             loadHistory()
         }

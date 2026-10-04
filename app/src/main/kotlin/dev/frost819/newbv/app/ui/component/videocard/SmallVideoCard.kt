@@ -1,6 +1,7 @@
 package dev.frost819.newbv.app.ui.component.videocard
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -117,9 +118,14 @@ fun SmallVideoCard(
             shape = CardDefaults.shape(MaterialTheme.shapes.large),
             border =
                 CardDefaults.border(
+                    border =
+                        Border(
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f)),
+                            shape = MaterialTheme.shapes.large,
+                        ),
                     focusedBorder =
                         Border(
-                            border = androidx.compose.foundation.BorderStroke(3.dp, MaterialTheme.colorScheme.border),
+                            border = BorderStroke(3.dp, MaterialTheme.colorScheme.border),
                             shape = MaterialTheme.shapes.large,
                         ),
                 ),

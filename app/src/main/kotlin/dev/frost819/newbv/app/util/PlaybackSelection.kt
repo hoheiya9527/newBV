@@ -72,6 +72,23 @@ fun findTrack(
 ): DashVideo? = data.dashVideos.firstOrNull { it.quality == quality && trackMatchesCodec(it, codec) }
 
 /**
+ * 同档画质下的编码尝试顺序。
+ *
+ * 用户偏好最前；其后 HEVC → AVC → AV1 → Dolby Vision。
+ * AV1 放在 AVC 之后，避免廉价电视芯「报能解、实际掉帧」时先吃 AV1。
+ *
+ * @param preferred 用户偏好编码。
+ */
+fun codecFallbackOrder(preferred: VideoCodec): List<VideoCodec> =
+    listOf(
+        preferred,
+        VideoCodec.HEVC,
+        VideoCodec.AVC,
+        VideoCodec.AV1,
+        VideoCodec.DVH1,
+    ).distinct()
+
+/**
  * 按「目标画质优先、逐档降级 + 编码偏好」挑选首个本机可解码的组合。
  *
  * @param data 播放数据。
@@ -87,14 +104,7 @@ fun pickDecodableProfile(
     capabilityProvider: VideoCapabilityProvider,
 ): PlaybackCandidate? {
     val qualities = orderQualities(data.dashVideos.map { it.quality }, requestedQualityId)
-    val codecOrder =
-        listOf(
-            preferredCodec,
-            VideoCodec.HEVC,
-            VideoCodec.AV1,
-            VideoCodec.AVC,
-            VideoCodec.DVH1,
-        ).distinct()
+    val codecOrder = codecFallbackOrder(preferredCodec)
     for (quality in qualities) {
         val available = collectCodecs(data, quality).toSet()
         for (codec in codecOrder.filter { it in available }) {

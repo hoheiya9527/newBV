@@ -48,7 +48,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -63,6 +62,7 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+import dev.frost819.newbv.app.ui.component.EmptyStateTip
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.util.ToastUtils
 import dev.frost819.newbv.app.viewmodel.comment.CommentListState
@@ -355,9 +355,7 @@ private fun CommentsContent(
                 }
             }
             state.comments.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("暂无评论")
-                }
+                EmptyStateTip("暂无评论")
             }
             else -> {
                 LazyColumn(
@@ -496,8 +494,8 @@ internal fun CommentCard(
                             if (comment.level > 0) append("  Lv.${comment.level}")
                             if (comment.isUp) append("  UP主")
                         },
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
                 )
                 Text(
                     text = comment.message,

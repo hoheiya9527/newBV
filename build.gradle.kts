@@ -14,13 +14,15 @@ plugins {
 
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
-    apply(plugin = "io.gitlab.arturbosch.detekt")
     apply(plugin = "jacoco")
 
-    // detekt 配置：使用根目录的 config/detekt.yml
-    tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-        config.setFrom(rootProject.files("config/detekt.yml"))
-        buildUponDefaultConfig = true
+    // 第三方弹幕引擎不跑 detekt（源码风格与项目不一致）
+    if (name != "danmaku-engine") {
+        apply(plugin = "io.gitlab.arturbosch.detekt")
+        tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+            config.setFrom(rootProject.files("config/detekt.yml"))
+            buildUponDefaultConfig = true
+        }
     }
 
     // JaCoCo：统一排除生成代码和纯数据类

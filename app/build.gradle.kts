@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Properties
 
 plugins {
@@ -24,9 +26,16 @@ if (signingPropertiesFile.exists()) {
     signingPropertiesFile.inputStream().use { signingProperties.load(it) }
 }
 
+fun Date.format(pattern: String): String = SimpleDateFormat(pattern).format(this)
+
+val versionDate = Date().format("yyMMdd")
+val appVersionName =
+    "${libs.versions.appVersionName.get().substringBeforeLast('.')}.$versionDate"
+val appVersionCode = versionDate.toInt()
+
 android {
-    namespace = AppConfiguration.appId
-    compileSdk = AppConfiguration.compileSdk
+    namespace = libs.versions.appNamespace.get()
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     signingConfigs {
         if (signingPropertiesFile.exists()) {
@@ -40,11 +49,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = AppConfiguration.applicationId
-        minSdk = AppConfiguration.minSdk
-        targetSdk = AppConfiguration.targetSdk
-        versionCode = AppConfiguration.versionCode
-        versionName = AppConfiguration.versionName
+        applicationId = libs.versions.appApplicationId.get()
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "dev.frost819.newbv.app.CustomTestRunner"
         vectorDrawables {
@@ -60,8 +69,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -80,9 +89,7 @@ android {
         onVariants { variant ->
             variant.outputs.forEach { output ->
                 if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
-                    output.outputFileName.set(
-                        "newBV_${AppConfiguration.versionCode}_${AppConfiguration.versionName}_${variant.name}.apk",
-                    )
+                    output.outputFileName.set("newBV_${appVersionName}_${variant.name}.apk")
                 }
             }
         }

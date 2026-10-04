@@ -1,7 +1,7 @@
 package dev.frost819.newbv.biliapi.repositories
 
 import bilibili.app.view.v1.ViewGrpcKt
-import bilibili.app.view.v1.viewReq
+import bilibili.app.view.v1.ViewReq
 import dev.frost819.newbv.biliapi.entity.ApiType
 import dev.frost819.newbv.biliapi.entity.video.VideoDetail
 import dev.frost819.newbv.biliapi.entity.video.VideoPage
@@ -119,9 +119,7 @@ class VideoDetailRepository(
                 val viewReply =
                     runCatching {
                         viewStub?.view(
-                            viewReq {
-                                this.aid = aid.toLong()
-                            },
+                            ViewReq.newBuilder().setAid(aid.toLong()).build(),
                         ) ?: throw IllegalStateException("Player stub is not initialized")
                     }.onFailure { handleGrpcException(it) }.getOrThrow()
                 VideoDetail.fromViewReply(viewReply)
@@ -147,9 +145,7 @@ class VideoDetailRepository(
                     val viewReply =
                         runCatching {
                             viewStub?.view(
-                                viewReq {
-                                    this.aid = aid
-                                },
+                                ViewReq.newBuilder().setAid(aid).build(),
                             ) ?: throw IllegalStateException("Player stub is not initialized")
                         }.onFailure { handleGrpcException(it) }
                             .getOrThrow()

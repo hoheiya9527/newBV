@@ -7,6 +7,12 @@ protobuf-gradle = "0.9.5"
 ktlint = "14.2.0"
 detekt = "1.23.7"
 versions-plugin = "0.52.0"
+compileSdk = "36"
+minSdk = "21"
+targetSdk = "36"
+appNamespace = "dev.frost819.newbv"
+appApplicationId = "com.hoheiya.newbv"
+appVersionName = "0.1.0"
 
 # === AndroidX ===
 activity = "1.10.1"

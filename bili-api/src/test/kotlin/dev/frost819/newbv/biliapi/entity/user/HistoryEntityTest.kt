@@ -1,10 +1,10 @@
 package dev.frost819.newbv.biliapi.entity.user
 
-import bilibili.app.interfaces.v1.cardOGV
-import bilibili.app.interfaces.v1.cardUGC
-import bilibili.app.interfaces.v1.cursor
-import bilibili.app.interfaces.v1.cursorItem
-import bilibili.app.interfaces.v1.cursorV2Reply
+import bilibili.app.interfaces.v1.CardOGV
+import bilibili.app.interfaces.v1.CardUGC
+import bilibili.app.interfaces.v1.Cursor
+import bilibili.app.interfaces.v1.CursorItem
+import bilibili.app.interfaces.v1.CursorV2Reply
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
@@ -109,26 +109,47 @@ class HistoryEntityTest {
     @Test
     fun `fromHistoryResponse gRPC filters CARD_UGC and CARD_OGV only`() {
         val reply =
-            cursorV2Reply {
-                cursor = cursor { max = 999L }
-                items +=
-                    cursorItem {
-                        oid = 1L
-                        title = "UGC视频"
-                        cardUgc = cardUGC { bvid = "BV1xx" }
-                    }
-                items +=
-                    cursorItem {
-                        oid = 2L
-                        title = "番剧"
-                        cardOgv = cardOGV {}
-                    }
-                items +=
-                    cursorItem {
-                        oid = 3L
-                        title = "文章"
-                    }
-            }
+            CursorV2Reply
+                .newBuilder()
+                .apply {
+                    cursor =
+                        Cursor
+                            .newBuilder()
+                            .apply {
+                                max = 999L
+                            }.build()
+                    addItems(
+                        CursorItem
+                            .newBuilder()
+                            .apply {
+                                oid = 1L
+                                title = "UGC视频"
+                                cardUgc =
+                                    CardUGC
+                                        .newBuilder()
+                                        .apply {
+                                            bvid = "BV1xx"
+                                        }.build()
+                            }.build(),
+                    )
+                    addItems(
+                        CursorItem
+                            .newBuilder()
+                            .apply {
+                                oid = 2L
+                                title = "番剧"
+                                cardOgv = CardOGV.getDefaultInstance()
+                            }.build(),
+                    )
+                    addItems(
+                        CursorItem
+                            .newBuilder()
+                            .apply {
+                                oid = 3L
+                                title = "文章"
+                            }.build(),
+                    )
+                }.build()
 
         val result = HistoryData.fromHistoryResponse(reply)
 
@@ -143,21 +164,25 @@ class HistoryEntityTest {
     @Test
     fun `fromHistoryItem gRPC CARD_UGC maps all fields`() {
         val item =
-            cursorItem {
-                oid = 993403941L
-                kid = 0L
-                title = "测试视频"
-                cardUgc =
-                    cardUGC {
-                        bvid = "BV1xx"
-                        cid = 1051761130L
-                        cover = "http://cover.test"
-                        name = "UP主"
-                        mid = 12345L
-                        duration = 300L
-                        progress = 120L
-                    }
-            }
+            CursorItem
+                .newBuilder()
+                .apply {
+                    oid = 993403941L
+                    kid = 0L
+                    title = "测试视频"
+                    cardUgc =
+                        CardUGC
+                            .newBuilder()
+                            .apply {
+                                bvid = "BV1xx"
+                                cid = 1051761130L
+                                cover = "http://cover.test"
+                                name = "UP主"
+                                mid = 12345L
+                                duration = 300L
+                                progress = 120L
+                            }.build()
+                }.build()
 
         val result = HistoryItem.fromHistoryItem(item)
 
@@ -178,17 +203,21 @@ class HistoryEntityTest {
     @Test
     fun `fromHistoryItem gRPC CARD_OGV does not map seasonId from kid`() {
         val item =
-            cursorItem {
-                oid = 100L
-                kid = 40000L
-                title = "番剧标题"
-                cardOgv =
-                    cardOGV {
-                        cover = "http://pgc-cover.test"
-                        duration = 1200L
-                        progress = 600L
-                    }
-            }
+            CursorItem
+                .newBuilder()
+                .apply {
+                    oid = 100L
+                    kid = 40000L
+                    title = "番剧标题"
+                    cardOgv =
+                        CardOGV
+                            .newBuilder()
+                            .apply {
+                                cover = "http://pgc-cover.test"
+                                duration = 1200L
+                                progress = 600L
+                            }.build()
+                }.build()
 
         val result = HistoryItem.fromHistoryItem(item)
 
@@ -210,11 +239,13 @@ class HistoryEntityTest {
     @Test
     fun `fromHistoryItem gRPC unknown card type maps to Unknown`() {
         val item =
-            cursorItem {
-                oid = 1L
-                kid = 0L
-                title = "未知类型"
-            }
+            CursorItem
+                .newBuilder()
+                .apply {
+                    oid = 1L
+                    kid = 0L
+                    title = "未知类型"
+                }.build()
 
         val result = HistoryItem.fromHistoryItem(item)
 

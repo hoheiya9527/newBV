@@ -115,7 +115,7 @@ fun QrLoginContent(
                                 QrLoginState.Error, QrLoginState.Unknown ->
                                     uiState.errorMessage.ifEmpty { stringResource(R.string.login_error) }
                             },
-                        style = MaterialTheme.typography.displaySmall,
+                        style = MaterialTheme.typography.headlineSmall,
                         color = statusColor,
                     )
                     AnimatedVisibility(

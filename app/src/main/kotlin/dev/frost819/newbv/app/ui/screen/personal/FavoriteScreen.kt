@@ -1,7 +1,6 @@
 package dev.frost819.newbv.app.ui.screen.personal
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,17 +16,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+
+import dev.frost819.newbv.app.ui.component.EmptyStateTip
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.ListFooterTip
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
 import dev.frost819.newbv.app.ui.component.focusSaverItem
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.component.videocard.SmallVideoCard
 import dev.frost819.newbv.app.ui.component.videocard.VideoCardData
+import dev.frost819.newbv.app.ui.component.videocard.videoGridSkeleton
 import dev.frost819.newbv.app.ui.navigation.UserSpaceRoute
 import dev.frost819.newbv.app.ui.navigation.navigateFromVideoCard
 import dev.frost819.newbv.app.util.formatHourMinSec
@@ -36,8 +40,6 @@ import dev.frost819.newbv.app.viewmodel.common.WatchLaterViewModel
 import dev.frost819.newbv.app.viewmodel.personal.PersonalViewModel
 import dev.frost819.newbv.core.focus.focusInvertedColors
 import dev.frost819.newbv.core.focus.touchClickable
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 
 /**
  * 收藏页面。
@@ -63,15 +65,7 @@ fun FavoriteScreen(
     CollectWatchLaterEffects(watchLaterViewModel)
 
     if (state.favoriteFolders.isEmpty() && !state.favoriteLoading && !state.favoriteError) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            androidx.tv.material3.Text(
-                text = "没有收藏夹",
-                color = androidx.tv.material3.MaterialTheme.colorScheme.onSurface,
-            )
-        }
+        EmptyStateTip(text = "没有收藏夹", modifier = modifier)
         return
     }
 
@@ -143,15 +137,19 @@ fun FavoriteScreen(
 
         TvLazyVerticalGrid(
             state = gridState,
-            columns = GridCells.Fixed(4),
+            columns = GridCells.Fixed(scaledGridColumns(4)),
             contentPadding = PaddingValues(24.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            videoGridSkeleton(
+                visible = state.favoriteItems.isEmpty() && state.favoriteLoading,
+                keyPrefix = "favorite",
+            )
             itemsIndexed(
                 items = state.favoriteItems,
                 key = { _, item -> item.id },
-            ) { index, item ->
+            ) { _, item ->
                 val cardData =
                     remember(item) {
                         VideoCardData(
@@ -166,7 +164,7 @@ fun FavoriteScreen(
                         )
                     }
                 SmallVideoCard(
-                    modifier = Modifier.focusSaverItem(focusSaver, "favorite_$index"),
+                    modifier = Modifier.focusSaverItem(focusSaver, "favorite_${item.id}"),
                     data = cardData,
                     onClick = {
                         navController.navigateFromVideoCard(cardData)
@@ -183,7 +181,7 @@ fun FavoriteScreen(
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 ListFooterTip(
-                    isLoading = state.favoriteLoading,
+                    isLoading = state.favoriteLoading && state.favoriteItems.isNotEmpty(),
                     isError = state.favoriteError,
                     hasMore = state.favoriteHasMore,
                     itemsIsEmpty = state.favoriteItems.isEmpty(),

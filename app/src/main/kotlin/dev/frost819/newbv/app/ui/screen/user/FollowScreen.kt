@@ -23,12 +23,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -39,9 +36,12 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+
+import dev.frost819.newbv.app.ui.component.ErrorTip
 import dev.frost819.newbv.app.ui.component.TvLazyVerticalGrid
 import dev.frost819.newbv.app.ui.component.focusSaverItem
 import dev.frost819.newbv.app.ui.component.rememberFocusSaver
+import dev.frost819.newbv.app.ui.component.scaledGridColumns
 import dev.frost819.newbv.app.ui.navigation.FollowRoute
 import dev.frost819.newbv.app.ui.navigation.UserSpaceRoute
 import dev.frost819.newbv.app.viewmodel.user.FollowViewModel
@@ -83,7 +83,7 @@ private fun FollowScreen(
 
     TvLazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(scaledGridColumns(4)),
         contentPadding = PaddingValues(24.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -109,20 +109,16 @@ private fun FollowScreen(
                             .padding(vertical = 48.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = "加载失败",
-                        color = Color.Gray,
-                        fontSize = 14.sp,
-                    )
+                    ErrorTip()
                 }
             }
         } else {
             itemsIndexed(
                 items = state.users,
                 key = { _, user -> user.mid },
-            ) { index, user ->
+            ) { _, user ->
                 FollowedUserCard(
-                    modifier = Modifier.focusSaverItem(focusSaver, "follow_$index"),
+                    modifier = Modifier.focusSaverItem(focusSaver, "follow_${user.mid}"),
                     user = user,
                     onClick = {
                         navController.navigate(UserSpaceRoute(mid = user.mid, name = user.name, face = user.avatar))
@@ -166,8 +162,7 @@ private fun FollowedUserCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = user.name,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -176,7 +171,7 @@ private fun FollowedUserCard(
                 Text(
                     text = user.sign.ifEmpty { "这个人很神秘" },
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )

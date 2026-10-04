@@ -1,16 +1,16 @@
 package dev.frost819.newbv.biliapi.entity.user
 
+import bilibili.app.dynamic.v2.CardVideoDynList
 import bilibili.app.dynamic.v2.DynModuleType
-import bilibili.app.dynamic.v2.cardVideoDynList
-import bilibili.app.dynamic.v2.dynVideoReply
-import bilibili.app.dynamic.v2.dynamicItem
-import bilibili.app.dynamic.v2.mdlDynArchive
-import bilibili.app.dynamic.v2.mdlDynPGC
-import bilibili.app.dynamic.v2.module
-import bilibili.app.dynamic.v2.moduleAuthor
-import bilibili.app.dynamic.v2.moduleDesc
-import bilibili.app.dynamic.v2.moduleDynamic
-import bilibili.app.dynamic.v2.userInfo
+import bilibili.app.dynamic.v2.DynVideoReply
+import bilibili.app.dynamic.v2.DynamicItem
+import bilibili.app.dynamic.v2.MdlDynArchive
+import bilibili.app.dynamic.v2.MdlDynPGC
+import bilibili.app.dynamic.v2.Module
+import bilibili.app.dynamic.v2.ModuleAuthor
+import bilibili.app.dynamic.v2.ModuleDesc
+import bilibili.app.dynamic.v2.ModuleDynamic
+import bilibili.app.dynamic.v2.UserInfo
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
@@ -24,40 +24,56 @@ class DynamicGrpcConversionTest {
     @Test
     fun `fromDynamicVideoItem grpc archive maps all fields`() {
         val item =
-            dynamicItem {
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_author
-                        moduleAuthor =
-                            moduleAuthor {
-                                mid = 999L
-                                ptimeLabelText = "2024-01-01 12:00"
-                                author =
-                                    userInfo {
-                                        mid = 999L
-                                        name = "gRPC UP"
-                                    }
-                            }
-                    }
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_dynamic
-                        moduleDynamic =
-                            moduleDynamic {
-                                dynArchive =
-                                    mdlDynArchive {
-                                        title = "gRPC视频标题"
-                                        cover = "http://cover.grpc"
-                                        avid = 200L
-                                        bvid = "BV200"
-                                        cid = 300L
-                                        coverLeftText1 = "10:30"
-                                        coverLeftText2 = "5万"
-                                        coverLeftText3 = "200"
-                                    }
-                            }
-                    }
-            }
+            DynamicItem
+                .newBuilder()
+                .apply {
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_author
+                                moduleAuthor =
+                                    ModuleAuthor
+                                        .newBuilder()
+                                        .apply {
+                                            mid = 999L
+                                            ptimeLabelText = "2024-01-01 12:00"
+                                            author =
+                                                UserInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        mid = 999L
+                                                        name = "gRPC UP"
+                                                    }.build()
+                                        }.build()
+                            }.build(),
+                    )
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_dynamic
+                                moduleDynamic =
+                                    ModuleDynamic
+                                        .newBuilder()
+                                        .apply {
+                                            dynArchive =
+                                                MdlDynArchive
+                                                    .newBuilder()
+                                                    .apply {
+                                                        title = "gRPC视频标题"
+                                                        cover = "http://cover.grpc"
+                                                        avid = 200L
+                                                        bvid = "BV200"
+                                                        cid = 300L
+                                                        coverLeftText1 = "10:30"
+                                                        coverLeftText2 = "5万"
+                                                        coverLeftText3 = "200"
+                                                    }.build()
+                                        }.build()
+                            }.build(),
+                    )
+                }.build()
 
         val video = DynamicVideo.fromDynamicVideoItem(item)
 
@@ -79,41 +95,65 @@ class DynamicGrpcConversionTest {
     @Test
     fun `fromDynamicVideoItem grpc archive with dynamic video prefix uses desc text`() {
         val item =
-            dynamicItem {
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_author
-                        moduleAuthor =
-                            moduleAuthor {
-                                ptimeLabelText = "动态视频 2024-01-01"
-                                author =
-                                    userInfo {
-                                        mid = 1L
-                                        name = "UP"
-                                    }
-                            }
-                    }
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_dynamic
-                        moduleDynamic =
-                            moduleDynamic {
-                                dynArchive =
-                                    mdlDynArchive {
-                                        title = "原标题"
-                                        cover = ""
-                                        avid = 1L
-                                        bvid = "BV1"
-                                        cid = 2L
-                                    }
-                            }
-                    }
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_desc
-                        moduleDesc = moduleDesc { text = "动态视频｜实际标题" }
-                    }
-            }
+            DynamicItem
+                .newBuilder()
+                .apply {
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_author
+                                moduleAuthor =
+                                    ModuleAuthor
+                                        .newBuilder()
+                                        .apply {
+                                            ptimeLabelText = "动态视频 2024-01-01"
+                                            author =
+                                                UserInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        mid = 1L
+                                                        name = "UP"
+                                                    }.build()
+                                        }.build()
+                            }.build(),
+                    )
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_dynamic
+                                moduleDynamic =
+                                    ModuleDynamic
+                                        .newBuilder()
+                                        .apply {
+                                            dynArchive =
+                                                MdlDynArchive
+                                                    .newBuilder()
+                                                    .apply {
+                                                        title = "原标题"
+                                                        cover = ""
+                                                        avid = 1L
+                                                        bvid = "BV1"
+                                                        cid = 2L
+                                                    }.build()
+                                        }.build()
+                            }.build(),
+                    )
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_desc
+                                moduleDesc =
+                                    ModuleDesc
+                                        .newBuilder()
+                                        .apply {
+                                            text = "动态视频｜实际标题"
+                                        }.build()
+                            }.build(),
+                    )
+                }.build()
 
         val video = DynamicVideo.fromDynamicVideoItem(item)
 
@@ -123,40 +163,56 @@ class DynamicGrpcConversionTest {
     @Test
     fun `fromDynamicVideoItem grpc pgc maps all fields`() {
         val item =
-            dynamicItem {
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_author
-                        moduleAuthor =
-                            moduleAuthor {
-                                ptimeLabelText = "2024-03-15"
-                                author =
-                                    userInfo {
-                                        mid = 888L
-                                        name = "番剧UP"
-                                    }
-                            }
-                    }
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_dynamic
-                        moduleDynamic =
-                            moduleDynamic {
-                                dynPgc =
-                                    mdlDynPGC {
-                                        title = "番剧标题"
-                                        cover = "http://cover.pgc"
-                                        cid = 400L
-                                        seasonId = 500L
-                                        epid = 600L
-                                        aid = 700L
-                                        coverLeftText1 = "24:00"
-                                        coverLeftText2 = "100万"
-                                        coverLeftText3 = "5000"
-                                    }
-                            }
-                    }
-            }
+            DynamicItem
+                .newBuilder()
+                .apply {
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_author
+                                moduleAuthor =
+                                    ModuleAuthor
+                                        .newBuilder()
+                                        .apply {
+                                            ptimeLabelText = "2024-03-15"
+                                            author =
+                                                UserInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        mid = 888L
+                                                        name = "番剧UP"
+                                                    }.build()
+                                        }.build()
+                            }.build(),
+                    )
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_dynamic
+                                moduleDynamic =
+                                    ModuleDynamic
+                                        .newBuilder()
+                                        .apply {
+                                            dynPgc =
+                                                MdlDynPGC
+                                                    .newBuilder()
+                                                    .apply {
+                                                        title = "番剧标题"
+                                                        cover = "http://cover.pgc"
+                                                        cid = 400L
+                                                        seasonId = 500L
+                                                        epid = 600L
+                                                        aid = 700L
+                                                        coverLeftText1 = "24:00"
+                                                        coverLeftText2 = "100万"
+                                                        coverLeftText3 = "5000"
+                                                    }.build()
+                                        }.build()
+                            }.build(),
+                    )
+                }.build()
 
         val video = DynamicVideo.fromDynamicVideoItem(item)
 
@@ -179,29 +235,38 @@ class DynamicGrpcConversionTest {
     @Test
     fun `fromDynamicVideoItem grpc unknown module type returns null`() {
         val item =
-            dynamicItem {
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_author
-                        moduleAuthor =
-                            moduleAuthor {
-                                ptimeLabelText = "2024-01-01"
-                                author =
-                                    userInfo {
-                                        mid = 1L
-                                        name = "UP"
-                                    }
-                            }
-                    }
-                modules +=
-                    module {
-                        moduleType = DynModuleType.module_dynamic
-                        moduleDynamic =
-                            moduleDynamic {
-                                // moduleItemCase is not set → default/unknown
-                            }
-                    }
-            }
+            DynamicItem
+                .newBuilder()
+                .apply {
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_author
+                                moduleAuthor =
+                                    ModuleAuthor
+                                        .newBuilder()
+                                        .apply {
+                                            ptimeLabelText = "2024-01-01"
+                                            author =
+                                                UserInfo
+                                                    .newBuilder()
+                                                    .apply {
+                                                        mid = 1L
+                                                        name = "UP"
+                                                    }.build()
+                                        }.build()
+                            }.build(),
+                    )
+                    addModules(
+                        Module
+                            .newBuilder()
+                            .apply {
+                                moduleType = DynModuleType.module_dynamic
+                                moduleDynamic = ModuleDynamic.getDefaultInstance()
+                            }.build(),
+                    )
+                }.build()
 
         val video = DynamicVideo.fromDynamicVideoItem(item)
 
@@ -211,16 +276,20 @@ class DynamicGrpcConversionTest {
     @Test
     fun `fromDynamicData grpc maps list and pagination`() {
         val reply =
-            dynVideoReply {
-                dynamicList =
-                    cardVideoDynList {
-                        list += fakeArchiveDynamicItem(aid = 100L, title = "视频1")
-                        list += fakeArchiveDynamicItem(aid = 200L, title = "视频2")
-                        hasMore = true
-                        historyOffset = "offset-789"
-                        updateBaseline = "baseline-012"
-                    }
-            }
+            DynVideoReply
+                .newBuilder()
+                .apply {
+                    dynamicList =
+                        CardVideoDynList
+                            .newBuilder()
+                            .apply {
+                                addList(fakeArchiveDynamicItem(aid = 100L, title = "视频1"))
+                                addList(fakeArchiveDynamicItem(aid = 200L, title = "视频2"))
+                                hasMore = true
+                                historyOffset = "offset-789"
+                                updateBaseline = "baseline-012"
+                            }.build()
+                }.build()
 
         val result = DynamicVideoData.fromDynamicData(reply)
 
@@ -235,12 +304,16 @@ class DynamicGrpcConversionTest {
     @Test
     fun `fromDynamicData grpc with empty list returns empty videos`() {
         val reply =
-            dynVideoReply {
-                dynamicList =
-                    cardVideoDynList {
-                        hasMore = false
-                    }
-            }
+            DynVideoReply
+                .newBuilder()
+                .apply {
+                    dynamicList =
+                        CardVideoDynList
+                            .newBuilder()
+                            .apply {
+                                hasMore = false
+                            }.build()
+                }.build()
 
         val result = DynamicVideoData.fromDynamicData(reply)
 
@@ -251,14 +324,18 @@ class DynamicGrpcConversionTest {
     @Test
     fun `fromDynamicData grpc filters out null items`() {
         val reply =
-            dynVideoReply {
-                dynamicList =
-                    cardVideoDynList {
-                        list += fakeArchiveDynamicItem(aid = 100L, title = "有效视频")
-                        list += fakeUnknownDynamicItem()
-                        hasMore = true
-                    }
-            }
+            DynVideoReply
+                .newBuilder()
+                .apply {
+                    dynamicList =
+                        CardVideoDynList
+                            .newBuilder()
+                            .apply {
+                                addList(fakeArchiveDynamicItem(aid = 100L, title = "有效视频"))
+                                addList(fakeUnknownDynamicItem())
+                                hasMore = true
+                            }.build()
+                }.build()
 
         val result = DynamicVideoData.fromDynamicData(reply)
 
@@ -269,56 +346,84 @@ class DynamicGrpcConversionTest {
     private fun fakeArchiveDynamicItem(
         aid: Long,
         title: String,
-    ) = dynamicItem {
-        modules +=
-            module {
-                moduleType = DynModuleType.module_author
-                moduleAuthor =
-                    moduleAuthor {
-                        ptimeLabelText = "2024-01-01 12:00"
-                        author =
-                            userInfo {
-                                mid = 1L
-                                name = "UP"
-                            }
-                    }
-            }
-        modules +=
-            module {
-                moduleType = DynModuleType.module_dynamic
-                moduleDynamic =
-                    moduleDynamic {
-                        dynArchive =
-                            mdlDynArchive {
-                                this.title = title
-                                cover = "http://cover.test"
-                                avid = aid
-                                bvid = "BV$aid"
-                                cid = aid * 10
-                            }
-                    }
-            }
-    }
+    ) = DynamicItem
+        .newBuilder()
+        .apply {
+            addModules(
+                Module
+                    .newBuilder()
+                    .apply {
+                        moduleType = DynModuleType.module_author
+                        moduleAuthor =
+                            ModuleAuthor
+                                .newBuilder()
+                                .apply {
+                                    ptimeLabelText = "2024-01-01 12:00"
+                                    author =
+                                        UserInfo
+                                            .newBuilder()
+                                            .apply {
+                                                mid = 1L
+                                                name = "UP"
+                                            }.build()
+                                }.build()
+                    }.build(),
+            )
+            addModules(
+                Module
+                    .newBuilder()
+                    .apply {
+                        moduleType = DynModuleType.module_dynamic
+                        moduleDynamic =
+                            ModuleDynamic
+                                .newBuilder()
+                                .apply {
+                                    dynArchive =
+                                        MdlDynArchive
+                                            .newBuilder()
+                                            .apply {
+                                                this.title = title
+                                                cover = "http://cover.test"
+                                                avid = aid
+                                                bvid = "BV$aid"
+                                                cid = aid * 10
+                                            }.build()
+                                }.build()
+                    }.build(),
+            )
+        }.build()
 
     private fun fakeUnknownDynamicItem() =
-        dynamicItem {
-            modules +=
-                module {
-                    moduleType = DynModuleType.module_author
-                    moduleAuthor =
-                        moduleAuthor {
-                            ptimeLabelText = "2024-01-01"
-                            author =
-                                userInfo {
-                                    mid = 1L
-                                    name = "UP"
-                                }
-                        }
-                }
-            modules +=
-                module {
-                    moduleType = DynModuleType.module_dynamic
-                    moduleDynamic = moduleDynamic {}
-                }
-        }
+        DynamicItem
+            .newBuilder()
+            .apply {
+                addModules(
+                    Module
+                        .newBuilder()
+                        .apply {
+                            moduleType = DynModuleType.module_author
+                            moduleAuthor =
+                                ModuleAuthor
+                                    .newBuilder()
+                                    .apply {
+                                        ptimeLabelText = "2024-01-01"
+                                        author =
+                                            UserInfo
+                                                .newBuilder()
+                                                .apply {
+                                                    mid = 1L
+                                                    name = "UP"
+                                                }.build()
+                                    }.build()
+                        }.build(),
+                )
+                addModules(
+                    Module
+                        .newBuilder()
+                        .apply {
+                            moduleType = DynModuleType.module_dynamic
+                            moduleDynamic = ModuleDynamic.getDefaultInstance()
+                        }.build(),
+                )
+            }.build()
 }

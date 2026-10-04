@@ -1,13 +1,6 @@
 package dev.frost819.newbv.biliapi.entity
 
 import bilibili.app.playerunite.v1.PlayViewUniteReply
-import bilibili.pgc.gateway.player.v2.dashVideoOrNull
-import bilibili.pgc.gateway.player.v2.dolbyOrNull
-import bilibili.pgc.gateway.player.v2.segmentVideoOrNull
-import bilibili.playershared.dashVideoOrNull
-import bilibili.playershared.dolbyOrNull
-import bilibili.playershared.lossLessItemOrNull
-import bilibili.playershared.segmentVideoOrNull
 
 data class PlayData(
     val dashVideos: List<DashVideo>,
@@ -22,14 +15,14 @@ data class PlayData(
             val vodInfo = playViewUniteReply.vodInfo
 
             // 过滤出有 dashVideo 的流
-            val dashVideoStreams = vodInfo.streamListList.filter { it.dashVideoOrNull != null }
+            val dashVideoStreams = vodInfo.streamListList.filter { it.hasDashVideo() }
 
             // 过滤出有 segmentVideo 的流（试看流）
-            val segmentVideoStreams = vodInfo.streamListList.filter { it.segmentVideoOrNull != null }
+            val segmentVideoStreams = vodInfo.streamListList.filter { it.hasSegmentVideo() }
 
             val audioList = vodInfo.dashAudioList
-            val dolbyItem = vodInfo.dolbyOrNull?.audioList?.firstOrNull()
-            val lossLessItem = vodInfo.lossLessItemOrNull?.audio.takeIf { it?.id != 0 }
+            val dolbyItem = vodInfo.takeIf { it.hasDolby() }?.dolby?.audioList?.firstOrNull()
+            val lossLessItem = vodInfo.takeIf { it.hasLossLessItem() }?.lossLessItem?.audio.takeIf { it?.id != 0 }
 
             // 处理 dashVideo
             val dashVideos =
@@ -133,13 +126,13 @@ data class PlayData(
             val vodInfo = pgcPlayViewReply.videoInfo
 
             // 过滤出有 dashVideo 的流
-            val dashVideoStreams = vodInfo.streamListList.filter { it.dashVideoOrNull != null }
+            val dashVideoStreams = vodInfo.streamListList.filter { it.hasDashVideo() }
 
             // 过滤出有 segmentVideo 的流（试看流）
-            val segmentVideoStreams = vodInfo.streamListList.filter { it.segmentVideoOrNull != null }
+            val segmentVideoStreams = vodInfo.streamListList.filter { it.hasSegmentVideo() }
 
             val audioList = vodInfo.dashAudioList
-            val dolbyItem = vodInfo.dolbyOrNull?.audio
+            val dolbyItem = vodInfo.takeIf { it.hasDolby() }?.dolby?.audio
             val isPreview = pgcPlayViewReply.business.isPreview
 
             // 处理 dashVideo

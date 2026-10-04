@@ -1,8 +1,8 @@
 package dev.frost819.newbv.biliapi.repositories
 
+import bilibili.app.interfaces.v1.Cursor
+import bilibili.app.interfaces.v1.CursorV2Req
 import bilibili.app.interfaces.v1.HistoryGrpcKt
-import bilibili.app.interfaces.v1.cursor
-import bilibili.app.interfaces.v1.cursorV2Req
 import dev.frost819.newbv.biliapi.entity.ApiType
 import dev.frost819.newbv.biliapi.entity.user.HistoryData
 import dev.frost819.newbv.biliapi.http.BiliHttpApi
@@ -34,13 +34,12 @@ class HistoryRepository(
             ApiType.App -> {
                 val reply =
                     historyStub?.cursorV2(
-                        cursorV2Req {
-                            this.cursor =
-                                cursor {
-                                    max = cursor
-                                }
-                            business = "archive"
-                        },
+                        CursorV2Req
+                            .newBuilder()
+                            .apply {
+                                this.cursor = Cursor.newBuilder().setMax(cursor).build()
+                                business = "archive"
+                            }.build(),
                     )
                 HistoryData.fromHistoryResponse(reply!!)
             }

@@ -1,6 +1,5 @@
 package dev.frost819.newbv.biliapi.entity.video
 
-import bilibili.app.view.v1.authorOrNull
 import dev.frost819.newbv.biliapi.entity.user.Author
 
 data class RelatedVideo(
@@ -25,8 +24,11 @@ data class RelatedVideo(
                 title = relate.title,
                 duration = relate.duration.toInt(),
                 author =
-                    relate.authorOrNull?.let { Author.fromAuthor(it) }
-                        ?: relate.desc?.let { Author(0, it, "") },
+                    if (relate.hasAuthor()) {
+                        Author.fromAuthor(relate.author)
+                    } else {
+                        Author(0, relate.desc, "")
+                    },
                 jumpToSeason = epId != null,
                 epid = epId,
                 view = relate.stat.view,

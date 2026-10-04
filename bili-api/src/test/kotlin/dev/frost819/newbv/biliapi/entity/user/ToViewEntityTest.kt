@@ -1,8 +1,8 @@
 package dev.frost819.newbv.biliapi.entity.user
 
-import bilibili.app.interfaces.v1.cardOGV
-import bilibili.app.interfaces.v1.cardUGC
-import bilibili.app.interfaces.v1.cursorItem
+import bilibili.app.interfaces.v1.CardOGV
+import bilibili.app.interfaces.v1.CardUGC
+import bilibili.app.interfaces.v1.CursorItem
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
@@ -162,21 +162,25 @@ class ToViewEntityTest {
     @Test
     fun `fromToViewItem gRPC CARD_UGC maps all fields`() {
         val item =
-            cursorItem {
-                oid = 999L
-                kid = 0L
-                title = "测试视频"
-                cardUgc =
-                    cardUGC {
-                        bvid = "BV999"
-                        cid = 888L
-                        cover = "http://cover.test"
-                        name = "test-up"
-                        mid = 777L
-                        duration = 900L
-                        progress = 120L
-                    }
-            }
+            CursorItem
+                .newBuilder()
+                .apply {
+                    oid = 999L
+                    kid = 0L
+                    title = "测试视频"
+                    cardUgc =
+                        CardUGC
+                            .newBuilder()
+                            .apply {
+                                bvid = "BV999"
+                                cid = 888L
+                                cover = "http://cover.test"
+                                name = "test-up"
+                                mid = 777L
+                                duration = 900L
+                                progress = 120L
+                            }.build()
+                }.build()
 
         val result = ToViewItem.fromToViewItem(item)
 
@@ -198,17 +202,21 @@ class ToViewEntityTest {
     @Test
     fun `fromToViewItem gRPC CARD_OGV does not map seasonId from kid`() {
         val item =
-            cursorItem {
-                oid = 100L
-                kid = 40000L
-                title = "番剧标题"
-                cardOgv =
-                    cardOGV {
-                        cover = "http://pgc-cover.test"
-                        duration = 1200L
-                        progress = 600L
-                    }
-            }
+            CursorItem
+                .newBuilder()
+                .apply {
+                    oid = 100L
+                    kid = 40000L
+                    title = "番剧标题"
+                    cardOgv =
+                        CardOGV
+                            .newBuilder()
+                            .apply {
+                                cover = "http://pgc-cover.test"
+                                duration = 1200L
+                                progress = 600L
+                            }.build()
+                }.build()
 
         val result = ToViewItem.fromToViewItem(item)
 
@@ -231,11 +239,13 @@ class ToViewEntityTest {
     @Test
     fun `fromToViewItem gRPC unknown card type maps to Unknown`() {
         val item =
-            cursorItem {
-                oid = 1L
-                kid = 0L
-                title = "未知类型"
-            }
+            CursorItem
+                .newBuilder()
+                .apply {
+                    oid = 1L
+                    kid = 0L
+                    title = "未知类型"
+                }.build()
 
         val result = ToViewItem.fromToViewItem(item)
 

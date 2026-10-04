@@ -203,4 +203,33 @@ class PlaybackSelectionTest {
         // codecs 为空时用 codecId 兜底
         assertThat(trackMatchesCodec(dashVideo(80, 12, ""), VideoCodec.HEVC)).isTrue()
     }
+
+    @Test
+    fun `codecFallbackOrder places AVC before AV1 after preferred HEVC`() {
+        assertThat(codecFallbackOrder(VideoCodec.HEVC))
+            .containsExactly(VideoCodec.HEVC, VideoCodec.AVC, VideoCodec.AV1, VideoCodec.DVH1)
+            .inOrder()
+    }
+
+    @Test
+    fun `pickDecodableProfile prefers AVC over AV1 when HEVC not decodable`() {
+        val data =
+            playData(
+                listOf(
+                    dashVideo(80, 12, "hev1.1.6.L120.90"),
+                    dashVideo(80, 13, "av01.0.08M.08"),
+                    dashVideo(80, 7, "avc1.640028"),
+                ),
+            )
+
+        val candidate =
+            pickDecodableProfile(
+                data = data,
+                requestedQualityId = 80,
+                preferredCodec = VideoCodec.HEVC,
+                capabilityProvider = capability(VideoCodec.AVC, VideoCodec.AV1),
+            )
+
+        assertThat(candidate).isEqualTo(PlaybackCandidate(80, VideoCodec.AVC))
+    }
 }

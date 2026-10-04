@@ -37,6 +37,7 @@ import androidx.tv.material3.CarouselDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import coil3.compose.AsyncImage
+
 import dev.frost819.newbv.biliapi.entity.CarouselData
 import dev.frost819.newbv.core.focus.focusedBorder
 import kotlinx.coroutines.delay
@@ -74,7 +75,7 @@ private fun CarouselContent(
         itemCount = data.size,
         modifier =
             modifier
-                .height(240.dp)
+                .height(240.dp.atDesignDensity())
                 .clip(MaterialTheme.shapes.large)
                 .focusedBorder(),
         onClick = { itemIndex ->

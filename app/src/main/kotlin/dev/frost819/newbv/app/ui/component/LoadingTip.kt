@@ -35,6 +35,7 @@ fun LoadingTip(modifier: Modifier = Modifier) {
         )
         Text(
             text = stringResource(id = R.string.loading),
+            style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
     }
@@ -50,8 +51,34 @@ fun ErrorTip(modifier: Modifier = Modifier) {
     Text(
         modifier = modifier,
         text = stringResource(id = R.string.load_failed),
+        style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface,
     )
+}
+
+/**
+ * 全屏空列表 / 未登录等提示。
+ *
+ * 字号固定为 bodyLarge，避免各页用 display 档当空态。
+ *
+ * @param text 提示文案。
+ */
+@Composable
+fun EmptyStateTip(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
 }
 
 /**
@@ -101,7 +128,8 @@ fun ListFooterTip(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = "没有更多了捏",
-                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

@@ -255,6 +255,11 @@ class AccountRepositoryImpl
                 biliJct = null
                 accessToken = null
             }
+            // injectCookies 读的是 BiliHttpApi 单例，不清理会以旧会话继续请求
+            BiliHttpApi.sessData = ""
+            BiliHttpApi.biliJct = ""
+            BiliHttpApi.mid = null
+            BiliHttpApi.accessToken = ""
             channelRepository.close()
             _uiState.value = AccountUiState()
         }

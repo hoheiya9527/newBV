@@ -106,13 +106,13 @@ fun rememberFocusSaver(): FocusSaver {
  * 用法：
  * ```
  * SmallVideoCard(
- *     modifier = Modifier.focusSaverItem(focusSaver, "rcmd_$index"),
+ *     modifier = Modifier.focusSaverItem(focusSaver, "rcmd_${item.aid}"),
  *     ...
  * )
  * ```
  *
  * @param focusSaver 焦点恢复器。
- * @param key 元素的唯一标识（如 `"cover"`、`"tag_${tag.id}"`、`"rcmd_$index"`）。
+ * @param key 元素的唯一标识（如 `"cover"`、`"tag_${tag.id}"`、`"rcmd_${aid}"`）。
  */
 fun Modifier.focusSaverItem(
     focusSaver: FocusSaver,

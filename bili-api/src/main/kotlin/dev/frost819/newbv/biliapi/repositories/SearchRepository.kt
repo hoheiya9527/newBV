@@ -1,12 +1,11 @@
 package dev.frost819.newbv.biliapi.repositories
 
-import bilibili.app.interfaces.v1.suggestionResult3Req
-import bilibili.pagination.pagination
+import bilibili.app.interfaces.v1.SuggestionResult3Req
+import bilibili.pagination.Pagination
 import bilibili.polymer.app.search.v1.Item
+import bilibili.polymer.app.search.v1.SearchAllRequest
 import bilibili.polymer.app.search.v1.SearchAllResponse
 import bilibili.polymer.app.search.v1.SearchByTypeRequest
-import bilibili.polymer.app.search.v1.searchAllRequest
-import bilibili.polymer.app.search.v1.searchByTypeRequest
 import dev.frost819.newbv.biliapi.entity.ApiType
 import dev.frost819.newbv.biliapi.entity.search.Hotword
 import dev.frost819.newbv.biliapi.grpc.utils.handleGrpcException
@@ -116,13 +115,13 @@ class SearchRepository(
                 val reply =
                     runCatching {
                         searchResultStub?.searchAll(
-                            searchAllRequest {
-                                this.keyword = keyword
-                                pagination =
-                                    pagination {
-                                        next = page.toString()
-                                    }
-                            },
+                            SearchAllRequest
+                                .newBuilder()
+                                .apply {
+                                    this.keyword = keyword
+                                    pagination =
+                                        Pagination.newBuilder().setNext(page.toString()).build()
+                                }.build(),
                         ) ?: throw IllegalStateException("App gRPC search stub is not initialized")
                     }.onFailure { handleGrpcException(it) }.getOrThrow()
                 SearchAllResult.fromGrpc(reply)
@@ -146,9 +145,7 @@ class SearchRepository(
             ApiType.App ->
                 searchSuggestStub
                     ?.suggest3(
-                        suggestionResult3Req {
-                            this.keyword = keyword
-                        },
+                        SuggestionResult3Req.newBuilder().setKeyword(keyword).build(),
                     )?.listList
                     ?.map { it.keyword } ?: emptyList()
         }
@@ -186,17 +183,17 @@ class SearchRepository(
                 val searchTypeReply =
                     runCatching {
                         val searchTypeRequest =
-                            searchByTypeRequest {
-                                this.keyword = keyword
-                                this.type = type.grpcTypeParam
-                                categorySort = order.grpcOrderParam
-                                userType = SearchByTypeRequest.UserType.ALL
-                                userSort = SearchByTypeRequest.UserSort.USER_SORT_DEFAULT
-                                pagination =
-                                    pagination {
-                                        next = page.nextPageForApp
-                                    }
-                            }
+                            SearchByTypeRequest
+                                .newBuilder()
+                                .apply {
+                                    this.keyword = keyword
+                                    this.type = type.grpcTypeParam
+                                    categorySort = order.grpcOrderParam
+                                    userType = SearchByTypeRequest.UserType.ALL
+                                    userSort = SearchByTypeRequest.UserSort.USER_SORT_DEFAULT
+                                    pagination =
+                                        Pagination.newBuilder().setNext(page.nextPageForApp).build()
+                                }.build()
                         searchResultStub?.searchByType(searchTypeRequest)
                             ?: throw IllegalStateException("Search result stub is not initialized")
                     }.onFailure { handleGrpcException(it) }.getOrThrow()

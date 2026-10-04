@@ -34,10 +34,10 @@ object BVColors {
     /** 红色，用于错误/直播。 */
     val Red = Color(0xFFC87878)
 
-    /** 深色主题中性色。 */
-    val DarkBackground = Color(0xFF171717)
-    val DarkSurface = Color(0xFF222222)
-    val DarkSurfaceVariant = Color(0xFF303030)
+    /** 深色主题中性色（AMOLED 纯黑，避免深灰底）。 */
+    val DarkBackground = Color.Black
+    val DarkSurface = Color.Black
+    val DarkSurfaceVariant = Color.Black
     val DarkOnBackground = Color(0xFFF2F2F2)
     val DarkOnSurface = Color(0xFFF2F2F2)
     val DarkOnSurfaceVariant = Color(0xFFB8B8B8)
