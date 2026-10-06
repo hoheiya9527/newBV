@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 
 import dev.frost819.newbv.app.ui.component.FocusSaver
 import dev.frost819.newbv.app.ui.component.ListFooterTip
@@ -151,16 +150,28 @@ private fun PgcGrid(
     val state by viewModel.uiState.collectAsState()
     val gridState = rememberLazyGridState()
 
+    // 切换分区后回到顶部。否则会沿用上一个分区的滚动位置，新列表看起来像没刷新。
+    LaunchedEffect(state.type) {
+        gridState.scrollToItem(0)
+    }
+
     LaunchedEffect(gridState) {
         snapshotFlow {
-            gridState.layoutInfo.visibleItemsInfo
-                .lastOrNull()
-                ?.index
+            val layout = gridState.layoutInfo
+            val lastIndex = layout.visibleItemsInfo.lastOrNull()?.index
+            val total = layout.totalItemsCount
+            lastIndex to total
         }.distinctUntilChanged()
-            .filter { index ->
-                index != null && index >= state.items.size - 10
-            }.collect {
-                viewModel.loadMore()
+            .collect { (lastIndex, total) ->
+                val current = viewModel.uiState.value
+                if (
+                    lastIndex != null &&
+                    !current.loading &&
+                    current.hasMore &&
+                    lastIndex >= total - 10
+                ) {
+                    viewModel.loadMore()
+                }
             }
     }
 
@@ -201,7 +212,7 @@ private fun PgcGrid(
 
         itemsIndexed(
             items = state.items,
-            key = { _, item -> item.seasonId },
+            key = { index, item -> "${state.type}_${item.seasonId}_$index" },
         ) { _, item ->
             val cardData =
                 remember(item) {

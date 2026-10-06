@@ -12,7 +12,7 @@ minSdk = "21"
 targetSdk = "36"
 appNamespace = "dev.frost819.newbv"
 appApplicationId = "com.hoheiya.newbv"
-appVersionName = "0.1.0"
+appVersionName = "0.2"
 
 # === AndroidX ===
 activity = "1.10.1"

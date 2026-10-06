@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -107,7 +108,7 @@ fun ListFooterTip(
     when {
         isLoading -> {
             Box(
-                modifier = modifier.fillMaxSize(),
+                modifier = modifier.fillMaxWidth().padding(vertical = 24.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 LoadingTip()
@@ -116,7 +117,7 @@ fun ListFooterTip(
 
         isError -> {
             Box(
-                modifier = modifier.fillMaxSize(),
+                modifier = modifier.fillMaxWidth().padding(vertical = 24.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 ErrorTip()

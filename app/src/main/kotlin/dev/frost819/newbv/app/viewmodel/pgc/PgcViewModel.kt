@@ -10,6 +10,7 @@ import dev.frost819.newbv.biliapi.entity.pgc.PgcType
 import dev.frost819.newbv.biliapi.repositories.PgcRepository
 import dev.frost819.newbv.core.log.Loggers
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +33,7 @@ private const val LOAD_TIMEOUT_MS = 10_000L
  * @property error Feed 加载是否失败。
  */
 data class PgcUiState(
+    val type: PgcType = PgcType.Anime,
     val carouselItems: List<CarouselData.CarouselItem> = emptyList(),
     val items: List<PgcItem> = emptyList(),
     val loading: Boolean = false,
@@ -66,6 +68,18 @@ class PgcViewModel
         /** 当前分区的分页游标。 */
         private var cursor: Int = 0
 
+        /**
+         * 切换分区或刷新时递增。进行中的请求回来后若代数已变，丢弃结果，
+         * 避免旧 Feed 把新分区的 cursor / hasMore 写成空页。
+         */
+        private var requestGeneration: Int = 0
+
+        private var carouselJob: Job? = null
+        private var feedJob: Job? = null
+
+        /** 连续空页次数。有的分区第一页只有横幅模块，需要接着翻页才能拿到片名。 */
+        private var emptyPageSkips: Int = 0
+
         init {
             loadCarousel()
             loadMore()
@@ -80,7 +94,11 @@ class PgcViewModel
             if (type == currentType && _uiState.value.items.isNotEmpty()) return
             currentType = type
             cursor = 0
-            _uiState.value = PgcUiState()
+            emptyPageSkips = 0
+            requestGeneration += 1
+            carouselJob?.cancel()
+            feedJob?.cancel()
+            _uiState.value = PgcUiState(type = type)
             loadCarousel()
             loadMore()
         }
@@ -91,25 +109,33 @@ class PgcViewModel
          * 失败时静默处理（轮播图为辅助展示，不阻塞 Feed）。
          */
         fun loadCarousel() {
-            viewModelScope.launch {
-                _uiState.update { it.copy(carouselLoading = true) }
+            val generation = requestGeneration
+            val type = currentType
+            carouselJob =
+                viewModelScope.launch {
+                    _uiState.update { state ->
+                        if (generation != requestGeneration) state else state.copy(carouselLoading = true)
+                    }
 
-                runCatching {
-                    withTimeout(LOAD_TIMEOUT_MS) {
-                        val carouselData = pgcRepository.getCarousel(currentType)
-                        _uiState.update {
-                            it.copy(carouselItems = carouselData.items)
+                    runCatching {
+                        withTimeout(LOAD_TIMEOUT_MS) {
+                            val carouselData = pgcRepository.getCarousel(type)
+                            if (generation != requestGeneration) return@withTimeout
+                            _uiState.update {
+                                it.copy(carouselItems = carouselData.items)
+                            }
                         }
+                    }.onFailure { error ->
+                        if (error is CancellationException && error !is TimeoutCancellationException) {
+                            throw error
+                        }
+                        if (generation != requestGeneration) return@onFailure
+                        logger.error(error) { "Failed to load PGC carousel: $type" }
                     }
-                }.onFailure { error ->
-                    if (error is CancellationException && error !is TimeoutCancellationException) {
-                        throw error
-                    }
-                    logger.error(error) { "Failed to load PGC carousel: $currentType" }
-                }
 
-                _uiState.update { it.copy(carouselLoading = false) }
-            }
+                    if (generation != requestGeneration) return@launch
+                    _uiState.update { it.copy(carouselLoading = false) }
+                }
         }
 
         /**
@@ -121,34 +147,62 @@ class PgcViewModel
             val current = _uiState.value
             if (current.loading || !current.hasMore) return
 
-            viewModelScope.launch {
-                _uiState.update { it.copy(loading = true, error = false) }
+            val generation = requestGeneration
+            val type = currentType
+            val requestCursor = cursor
+            feedJob =
+                viewModelScope.launch {
+                    _uiState.update { state ->
+                        if (generation != requestGeneration) state else state.copy(loading = true, error = false)
+                    }
 
-                runCatching {
-                    withTimeout(LOAD_TIMEOUT_MS) {
-                        val data: PgcFeedData =
-                            pgcRepository.getFeed(
-                                pgcType = currentType,
-                                cursor = cursor,
-                            )
-                        cursor = data.cursor
-                        _uiState.update {
-                            it.copy(
-                                items = it.items + data.items,
-                                hasMore = data.hasNext,
-                            )
+                    var continueEmptyPage = false
+                    runCatching {
+                        withTimeout(LOAD_TIMEOUT_MS) {
+                            val data: PgcFeedData =
+                                pgcRepository.getFeed(
+                                    pgcType = type,
+                                    cursor = requestCursor,
+                                )
+                            if (generation != requestGeneration) return@withTimeout
+                            cursor = data.cursor
+                            val playable =
+                                data.items
+                                    .distinctBy { it.seasonId }
+                                    .filter { item -> _uiState.value.items.none { it.seasonId == item.seasonId } }
+                            if (playable.isEmpty() && data.hasNext && emptyPageSkips < MAX_EMPTY_PAGE_SKIPS) {
+                                emptyPageSkips += 1
+                                continueEmptyPage = true
+                                _uiState.update { it.copy(hasMore = true, error = false) }
+                            } else if (playable.isEmpty()) {
+                                // 空页次数用尽，或接口声明没有下一页。停住，避免 hasMore 仍为 true 时网格不再触发请求。
+                                emptyPageSkips = 0
+                                _uiState.update { it.copy(hasMore = false, error = false) }
+                            } else {
+                                emptyPageSkips = 0
+                                _uiState.update {
+                                    it.copy(
+                                        items = it.items + playable,
+                                        hasMore = data.hasNext,
+                                    )
+                                }
+                            }
                         }
+                    }.onFailure { error ->
+                        if (error is CancellationException && error !is TimeoutCancellationException) {
+                            throw error
+                        }
+                        if (generation != requestGeneration) return@onFailure
+                        logger.error(error) { "Failed to load PGC feed: $type" }
+                        _uiState.update { it.copy(error = true) }
                     }
-                }.onFailure { error ->
-                    if (error is CancellationException && error !is TimeoutCancellationException) {
-                        throw error
-                    }
-                    logger.error(error) { "Failed to load PGC feed: $currentType" }
-                    _uiState.update { it.copy(error = true) }
-                }
 
-                _uiState.update { it.copy(loading = false) }
-            }
+                    if (generation != requestGeneration) return@launch
+                    _uiState.update { it.copy(loading = false) }
+                    if (continueEmptyPage && generation == requestGeneration) {
+                        loadMore()
+                    }
+                }
         }
 
         /**
@@ -156,8 +210,16 @@ class PgcViewModel
          */
         fun refresh() {
             cursor = 0
-            _uiState.value = PgcUiState()
+            emptyPageSkips = 0
+            requestGeneration += 1
+            carouselJob?.cancel()
+            feedJob?.cancel()
+            _uiState.value = PgcUiState(type = currentType)
             loadCarousel()
             loadMore()
+        }
+
+        private companion object {
+            const val MAX_EMPTY_PAGE_SKIPS = 3
         }
     }

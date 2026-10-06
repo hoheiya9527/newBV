@@ -13,28 +13,55 @@ data class PgcItem(
 ) {
     companion object {
         fun fromFeedSubItem(feedSubItem: dev.frost819.newbv.biliapi.http.entity.pgc.PgcFeedData.FeedSubItem): PgcItem =
-            PgcItem(
+            fromFeedSubItemOrNull(feedSubItem)
+                ?: throw IllegalArgumentException("Feed 条目缺少 seasonId 或 seasonType")
+
+        /**
+         * 转成网格卡片。缺少季 ID、分区或标题时返回 null，调用方跳过该条。
+         */
+        fun fromFeedSubItemOrNull(
+            feedSubItem: dev.frost819.newbv.biliapi.http.entity.pgc.PgcFeedData.FeedSubItem,
+        ): PgcItem? {
+            val seasonId = feedSubItem.seasonId ?: return null
+            val seasonType = feedSubItem.seasonType ?: return null
+            if (feedSubItem.title.isBlank()) return null
+            return PgcItem(
                 cover = feedSubItem.cover,
                 title = feedSubItem.title,
                 subTitle = feedSubItem.subTitle,
-                seasonId = feedSubItem.seasonId!!,
+                seasonId = seasonId,
                 episodeId = feedSubItem.episodeId,
-                seasonType = SeasonIndexType.fromId(feedSubItem.seasonType!!),
+                seasonType = SeasonIndexType.fromId(seasonType),
                 rating = feedSubItem.rating ?: "0",
             )
+        }
 
         fun fromFeedSubItem(
             feedSubItem: dev.frost819.newbv.biliapi.http.entity.pgc.PgcFeedV3Data.FeedItem.FeedSubItem,
         ): PgcItem =
-            PgcItem(
+            fromFeedSubItemOrNull(feedSubItem)
+                ?: throw IllegalArgumentException("FeedV3 条目缺少 seasonId 或 seasonType")
+
+        /**
+         * 转成网格卡片。缺少季 ID、分区或标题时返回 null，调用方跳过该条。
+         */
+        fun fromFeedSubItemOrNull(
+            feedSubItem: dev.frost819.newbv.biliapi.http.entity.pgc.PgcFeedV3Data.FeedItem.FeedSubItem,
+        ): PgcItem? {
+            val seasonId = feedSubItem.seasonId ?: return null
+            val seasonType = feedSubItem.seasonType ?: return null
+            val episodeId = feedSubItem.episodeId ?: feedSubItem.inline?.epId ?: return null
+            if (feedSubItem.title.isBlank()) return null
+            return PgcItem(
                 cover = feedSubItem.cover,
                 title = feedSubItem.title,
                 subTitle = feedSubItem.subTitle,
-                seasonId = feedSubItem.seasonId!!,
-                episodeId = feedSubItem.episodeId ?: feedSubItem.inline!!.epId,
-                seasonType = SeasonIndexType.fromId(feedSubItem.seasonType!!),
+                seasonId = seasonId,
+                episodeId = episodeId,
+                seasonType = SeasonIndexType.fromId(seasonType),
                 rating = feedSubItem.rating ?: "0",
             )
+        }
 
         fun fromIndexResultItem(
             indexResultItem: dev.frost819.newbv.biliapi.http.entity.index.IndexResultData.IndexResultItem,

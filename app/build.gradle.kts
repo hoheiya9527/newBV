@@ -30,7 +30,7 @@ fun Date.format(pattern: String): String = SimpleDateFormat(pattern).format(this
 
 val versionDate = Date().format("yyMMdd")
 val appVersionName =
-    "${libs.versions.appVersionName.get().substringBeforeLast('.')}.$versionDate"
+    "${libs.versions.appVersionName.get()}.$versionDate"
 val appVersionCode = versionDate.toInt()
 
 android {
