@@ -2,6 +2,12 @@ package dev.frost819.newbv.biliapi.entity.video
 
 import dev.frost819.newbv.biliapi.entity.user.Author
 
+/**
+ * 相关视频条目。
+ *
+ * @property pubdate 稿件发布时间（秒级时间戳）；0 表示未知。
+ *   仅 Web 接口返回该字段；App gRPC 的 `Relate` 不含发布时间，此时为 0（卡片不显示日期）。
+ */
 data class RelatedVideo(
     val aid: Long,
     val cid: Long,
@@ -13,6 +19,7 @@ data class RelatedVideo(
     val epid: Int?,
     val view: Int,
     val danmaku: Int,
+    val pubdate: Long = 0L,
 ) {
     companion object {
         fun fromRelate(relate: bilibili.app.view.v1.Relate): RelatedVideo {
@@ -49,6 +56,7 @@ data class RelatedVideo(
                 epid = epId,
                 view = relate.stat.view,
                 danmaku = relate.stat.danmaku,
+                pubdate = relate.pubdate.toLong(),
             )
         }
     }

@@ -139,6 +139,11 @@ fun VideoPlayerScreen(
         }
     }
 
+    // 相关视频归属随当前播放视频切换（播放器内切视频不会更新导航路由参数）
+    LaunchedEffect(uiState.aid) {
+        videoListViewModel.setCurrentAid(uiState.aid)
+    }
+
     // 切换视频事件：协调弹幕/字幕/蒙版重载
     LaunchedEffect(Unit) {
         playerViewModel.videoSwitchEvent.collect { event ->
@@ -170,6 +175,11 @@ fun VideoPlayerScreen(
         } else {
             danmakuViewModel.pause()
         }
+    }
+
+    // 弹幕倍速同步：初始默认倍速、菜单/快捷键切换、播放器重建等所有路径统一由播放速度状态驱动
+    LaunchedEffect(uiState.playSpeed) {
+        danmakuViewModel.updateSpeed(uiState.playSpeed)
     }
 
     // 心跳循环（5s 延迟后，每 15s 发送）
@@ -308,7 +318,7 @@ fun VideoPlayerScreen(
         onPlaySpeedChange = { speed ->
             logger.info { "[PLAYBACK] speedChange aid=${uiState.aid}, speed=$speed" }
             playerViewModel.updatePlaySpeed(speed)
-            danmakuViewModel.updateSpeed(speed)
+            // 弹幕倍速由 LaunchedEffect(uiState.playSpeed) 统一同步，此处无需直接调用
         },
         onDanmakuSettingChange = { action -> danmakuViewModel.updateDanmakuState(action) },
         onSubtitleChange = { subtitle -> subtitleViewModel.selectSubtitle(subtitle.id) },
@@ -323,6 +333,8 @@ fun VideoPlayerScreen(
                         aid = video.avid,
                         cid = video.cid ?: 0,
                         title = video.title,
+                        authorMid = video.upMid,
+                        authorName = video.upName,
                     ),
                 )
             }
